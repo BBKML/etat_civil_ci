@@ -1,0 +1,605 @@
+{% extends "admin/base_site.html" %}
+{% load static i18n %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Styles spécifiques au tableau de bord citoyen */
+    .citizen-dashboard {
+        padding: 20px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .citizen-header {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(45deg, #ff7b00, #00a550);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: bold;
+        font-size: 20px;
+    }
+
+    .user-details h3 {
+        margin: 0;
+        font-size: 18px;
+        color: #333;
+    }
+
+    .user-details p {
+        margin: 5px 0 0;
+        color: #666;
+        font-size: 14px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        border-left: 4px solid;
+        text-align: center;
+        transition: all 0.3s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+
+    .stat-card.total { border-left-color: #3182ce; }
+    .stat-card.pending { border-left-color: #d69e2e; }
+    .stat-card.approved { border-left-color: #38a169; }
+    .stat-card.delivered { border-left-color: #805ad5; }
+
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        margin: 0 auto 15px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        color: white;
+    }
+
+    .stat-card.total .stat-icon { background: #3182ce; }
+    .stat-card.pending .stat-icon { background: #d69e2e; }
+    .stat-card.approved .stat-icon { background: #38a169; }
+    .stat-card.delivered .stat-icon { background: #805ad5; }
+
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: bold;
+        color: #2d3748;
+        margin-bottom: 5px;
+    }
+
+    .stat-label {
+        color: #718096;
+        font-size: 14px;
+    }
+
+    .main-content {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+
+    .content-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .quick-actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 30px;
+    }
+
+    .action-btn {
+        background: linear-gradient(45deg, #ff7b00, #00a550);
+        color: white;
+        border: none;
+        padding: 15px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        text-align: center;
+    }
+
+    .action-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        color: white;
+        text-decoration: none;
+    }
+
+    .action-btn i {
+        font-size: 24px;
+    }
+
+    .demandes-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .demande-item {
+        background: #f7fafc;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border-left: 4px solid;
+        transition: all 0.3s;
+    }
+
+    .demande-item:hover {
+        transform: translateX(5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+
+    .demande-item.en-attente { border-color: #d69e2e; }
+    .demande-item.approuvee { border-color: #38a169; }
+    .demande-item.rejetee { border-color: #e53e3e; }
+    .demande-item.delivree { border-color: #805ad5; }
+
+    .demande-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .demande-number {
+        font-weight: bold;
+        color: #2d3748;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-badge.en-attente { background: #fef5e7; color: #d69e2e; }
+    .status-badge.approuvee { background: #f0fff4; color: #38a169; }
+    .status-badge.rejetee { background: #fed7d7; color: #e53e3e; }
+    .status-badge.delivree { background: #faf5ff; color: #805ad5; }
+
+    .demande-details {
+        color: #718096;
+        font-size: 14px;
+        margin-bottom: 10px;
+    }
+
+    .demande-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-sm {
+        padding: 6px 12px;
+        border: none;
+        border-radius: 6px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-primary { background: #3182ce; color: white; }
+    .btn-success { background: #38a169; color: white; }
+    .btn-danger { background: #e53e3e; color: white; }
+
+    .btn-sm:hover {
+        transform: translateY(-1px);
+        opacity: 0.9;
+    }
+
+    .sidebar-section {
+        margin-bottom: 25px;
+    }
+
+    .sidebar-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .notification-item, .help-item {
+        background: #f7fafc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 3px solid #3182ce;
+    }
+
+    .notification-title {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 14px;
+        margin-bottom: 5px;
+    }
+
+    .notification-text, .help-text {
+        color: #718096;
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .help-item {
+        border-left-color: #38a169;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .help-item:hover {
+        background: #edf2f7;
+        transform: translateX(3px);
+    }
+
+    @media (max-width: 768px) {
+        .main-content {
+            grid-template-columns: 1fr;
+        }
+
+        .quick-actions {
+            grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="citizen-dashboard">
+    <!-- Header -->
+    <div class="citizen-header">
+        <div>
+            <h1>Mon Espace État Civil</h1>
+            <p>République de Côte d'Ivoire</p>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <div class="user-avatar">{{ request.user.get_initials }}</div>
+            <div class="user-details">
+                <h3>{{ request.user.get_full_name }}</h3>
+                <p>Citoyen • CNI: {{ request.user.numero_cni|default:"Non renseigné" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards - Version améliorée -->
+    <div class="stats-grid">
+        <!-- Cartes pour les demandes -->
+        <div class="stat-card total">
+            <div class="stat-icon">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div class="stat-number">{{ dashboard_data.mes_demandes_count }}</div>
+            <div class="stat-label">Total des demandes</div>
+        </div>
+        
+        <!-- Cartes pour les personnes -->
+        <div class="stat-card persons">
+            <div class="stat-icon">
+                <i class="fas fa-users"></i>
+            </div>
+            <div class="stat-number">{{ dashboard_data.mes_personnes_count }}</div>
+            <div class="stat-label">Personnes enregistrées</div>
+        </div>
+        
+        <!-- Cartes pour les paiements -->
+        <div class="stat-card payments">
+            <div class="stat-icon">
+                <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="stat-number">{{ dashboard_data.mes_paiements_count }}</div>
+            <div class="stat-label">Paiements effectués</div>
+        </div>
+        
+        <!-- Statut des demandes -->
+        <div class="stat-card pending">
+            <div class="stat-icon">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-number">{{ dashboard_data.demandes_en_cours }}</div>
+            <div class="stat-label">En attente</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Colonne principale -->
+        <div class="content-column">
+            <!-- Section Demandes -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-file-alt"></i>
+                        Mes Demandes Récentes
+                    </h2>
+                    <a href="{% url 'admin:core_demandeacte_changelist' %}" class="btn-sm btn-primary">
+                        Voir toutes <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="demandes-list">
+                    {% for demande in mes_demandes %}
+                    <div class="demande-item {{ demande.get_statut_display|slugify }}">
+                        <div class="demande-header">
+                            <span class="demande-number">#{{ demande.numero_demande }}</span>
+                            <span class="status-badge {{ demande.get_statut_display|slugify }}">{{ demande.get_statut_display }}</span>
+                        </div>
+                        <div class="demande-details">
+                            <strong>{{ demande.get_type_acte_display }}</strong> - 
+                            Personne concernée: {{ demande.personne_concernee.nom }} {{ demande.personne_concernee.prenoms }}<br>
+                            Demandé le {{ demande.date_demande|date:"d/m/Y" }} • {{ demande.commune_traitement.nom }}
+                        </div>
+                        <div class="demande-actions">
+                            <a href="{% url 'admin:core_demandeacte_change' demande.id %}" class="btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> Détails
+                            </a>
+                            {% if demande.statut == 'APPROUVE' %}
+                            <a href="#" class="btn-sm btn-success">
+                                <i class="fas fa-credit-card"></i> Payer
+                            </a>
+                            {% elif demande.statut == 'DELIVRE' %}
+                            <a href="#" class="btn-sm btn-success">
+                                <i class="fas fa-download"></i> Télécharger
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="fas fa-inbox"></i>
+                        <p>Aucune demande enregistrée</p>
+                        <a href="{% url 'admin:core_demandeacte_add' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Faire une demande
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Section Personnes -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h2 class="card-title">
+                        <i class="fas fa-users"></i>
+                        Personnes Enregistrées
+                    </h2>
+                    <a href="{% url 'admin:core_personne_changelist' %}" class="btn-sm btn-primary">
+                        Voir toutes <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="personnes-list">
+                    {% for personne in mes_personnes %}
+                    <div class="personne-item">
+                        <div class="personne-avatar">
+                            {{ personne.nom|first }}{{ personne.prenoms|first }}
+                        </div>
+                        <div class="personne-details">
+                            <strong>{{ personne.nom }} {{ personne.prenoms }}</strong><br>
+                            Né(e) le {{ personne.date_naissance|date:"d/m/Y" }} à {{ personne.commune_naissance.nom }}<br>
+                            {% if personne.numero_unique %}
+                            <small>N° unique: {{ personne.numero_unique }}</small>
+                            {% endif %}
+                        </div>
+                        <div class="personne-actions">
+                            <a href="{% url 'admin:core_personne_change' personne.id %}" class="btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> Voir
+                            </a>
+                            <a href="{% url 'admin:core_demandeacte_add' %}?personne_id={{ personne.id }}" class="btn-sm btn-secondary">
+                                <i class="fas fa-file-alt"></i> Demande
+                            </a>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state">
+                        <i class="fas fa-user-slash"></i>
+                        <p>Aucune personne enregistrée</p>
+                        <a href="{% url 'admin:core_personne_add' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Ajouter une personne
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Section Paiements -->
+            <div class="content-card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Mes Paiements
+                    </h3>
+                    <a href="{% url 'admin:core_paiement_changelist' %}" class="btn-sm btn-primary">
+                        Voir tous
+                    </a>
+                </div>
+                
+                <div class="paiements-list">
+                    {% for paiement in mes_paiements %}
+                    <div class="paiement-item">
+                        <div class="paiement-header">
+                            <span class="paiement-ref">#{{ paiement.reference_transaction }}</span>
+                            <span class="status-badge {{ paiement.get_statut_display|slugify }}">
+                                {{ paiement.get_statut_display }}
+                            </span>
+                        </div>
+                        <div class="paiement-details">
+                            <strong>{{ paiement.montant }} FCFA</strong><br>
+                            Pour la demande #{{ paiement.demande.numero_demande }}<br>
+                            Le {{ paiement.date_paiement|date:"d/m/Y" }}
+                        </div>
+                        <div class="paiement-actions">
+                            <a href="{% url 'admin:core_paiement_change' paiement.id %}" class="btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> Détails
+                            </a>
+                            {% if paiement.statut == 'EN_ATTENTE' %}
+                            <a href="#" class="btn-sm btn-success">
+                                <i class="fas fa-check"></i> Valider
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="empty-state mini">
+                        <i class="fas fa-money-bill-alt"></i>
+                        <p>Aucun paiement enregistré</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="content-card quick-actions-card">
+                <h3 class="card-title">
+                    <i class="fas fa-bolt"></i>
+                    Actions Rapides
+                </h3>
+                <div class="quick-actions">
+                    <a href="{% url 'admin:core_demandeacte_add' %}" class="action-btn primary">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Nouvelle Demande</span>
+                    </a>
+                    <a href="{% url 'admin:core_personne_add' %}" class="action-btn secondary">
+                        <i class="fas fa-user-plus"></i>
+                        <span>Ajouter une Personne</span>
+                    </a>
+                    <a href="#" class="action-btn">
+                        <i class="fas fa-question-circle"></i>
+                        <span>Aide</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="content-card">
+                <h3 class="card-title">
+                    <i class="fas fa-bell"></i>
+                    Notifications
+                </h3>
+                {% if dashboard_data.demandes_en_cours > 0 %}
+                <div class="notification-item warning">
+                    <div class="notification-title">Demandes en attente</div>
+                    <div class="notification-text">
+                        Vous avez {{ dashboard_data.demandes_en_cours }} demande(s) en cours de traitement.
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if dashboard_data.paiements_en_attente > 0 %}
+                <div class="notification-item alert">
+                    <div class="notification-title">Paiements en attente</div>
+                    <div class="notification-text">
+                        Vous avez {{ dashboard_data.paiements_en_attente }} paiement(s) à effectuer.
+                    </div>
+                    <a href="{% url 'admin:core_paiement_changelist' %}?statut=EN_ATTENTE" class="btn-sm btn-primary">
+                        Voir les paiements
+                    </a>
+                </div>
+                {% endif %}
+                
+                <div class="notification-item info">
+                    <div class="notification-title">Bienvenue</div>
+                    <div class="notification-text">
+                        Votre espace citoyen vous permet de gérer toutes vos démarches d'état civil.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+{% block extrajs %}
+{{ block.super }}
+<script>
+    // Fonctions pour les actions
+    function viewRequest(requestId) {
+        window.location.href = `/admin/core/demandeacte/${requestId}/change/`;
+    }
+
+    function payRequest(requestId) {
+        alert(`Redirection vers le paiement pour ${requestId}`);
+        // Ici vous pourriez rediriger vers la page de paiement
+    }
+
+    function downloadDocument(requestId) {
+        alert(`Téléchargement du document ${requestId}`);
+        // Ici vous pourriez déclencher le téléchargement
+    }
+
+    function resubmitRequest(requestId) {
+        if (confirm('Voulez-vous vraiment refaire cette demande ?')) {
+            alert(`Nouvelle soumission de ${requestId}`);
+            // Ici vous pourriez dupliquer la demande
+        }
+    }
+</script>
+{% endblock %}

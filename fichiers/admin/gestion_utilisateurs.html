@@ -1,0 +1,32 @@
+{% extends 'base_dashboard.html' %}
+
+{% block page_title %}
+<i class="bi bi-people-fill me-2"></i> Gestion des utilisateurs
+{% endblock %}
+
+{% block dashboard_content %}
+<h5>Liste des utilisateurs</h5>
+<table class="table table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Nom d'utilisateur</th>
+            <th>Email</th>
+            <th>Rôle</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Exemple de ligne -->
+        <tr>
+            <td>agent_koumassi</td>
+            <td>agent@koumassi.gov</td>
+            <td>Agent</td>
+            <td>
+                <a href="#" class="btn btn-sm btn-outline-secondary">Modifier</a>
+                <a href="#" class="btn btn-sm btn-outline-danger">Supprimer</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<a href="#" class="btn btn-success mt-3">Ajouter un utilisateur</a>
+{% endblock %}

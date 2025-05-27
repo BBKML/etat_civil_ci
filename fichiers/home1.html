@@ -1,0 +1,168 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Service d'État Civil - Accueil{% endblock %}
+
+{% block content %}
+<style>
+    .text-ivoire-orange {
+        color: #F77F00;
+    }
+    .bg-ivoire-orange {
+        background-color: #F77F00;
+    }
+    .text-ivoire-green {
+        color: #009E49;
+    }
+    .bg-ivoire-green {
+        background-color: #009E49;
+    }
+</style>
+
+<!-- Hero Section -->
+<div class="row mb-5">
+    <div class="col-md-6 d-flex flex-column justify-content-center">
+        <h1 class="display-4 fw-bold mb-4">Service d'État Civil en ligne</h1>
+        <p class="lead mb-4">Demandez vos actes en ligne simplement, rapidement et en toute sécurité. Plus besoin de vous déplacer !</p>
+        <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+            <a href="#" class="btn bg-ivoire-orange text-white btn-lg px-4 me-md-2">Faire une demande</a>
+            <a href="#" class="btn btn-outline-secondary btn-lg px-4">En savoir plus</a>
+        </div>
+    </div>
+    {% comment %} <div class="col-md-6">
+        <img src="#" alt="État Civil" class="img-fluid">
+    </div> {% endcomment %}
+</div>
+
+<!-- Services Section -->
+<h2 class="text-center mb-4">Nos services</h2>
+<div class="row row-cols-1 row-cols-md-3 g-4 mb-5">
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="icon-wrapper mb-3">
+                    <i class="fas fa-baby fs-1 text-ivoire-orange"></i>
+                </div>
+                <h3 class="card-title">Acte de naissance</h3>
+                <p class="card-text">Obtenez un extrait ou une copie intégrale de votre acte de naissance.</p>
+                <a href="#" class="btn btn-outline-ivoire-orange text-ivoire-orange">Demander</a>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="icon-wrapper mb-3">
+                    <i class="fas fa-ring fs-1 text-ivoire-orange"></i>
+                </div>
+                <h3 class="card-title">Acte de mariage</h3>
+                <p class="card-text">Obtenez un extrait ou une copie intégrale de votre acte de mariage.</p>
+                <a href="#" class="btn btn-outline-ivoire-orange text-ivoire-orange">Demander</a>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card h-100 shadow-sm">
+            <div class="card-body text-center">
+                <div class="icon-wrapper mb-3">
+                    <i class="fas fa-book fs-1 text-ivoire-orange"></i>
+                </div>
+                <h3 class="card-title">Acte de décès</h3>
+                <p class="card-text">Obtenez un extrait ou une copie intégrale d'un acte de décès.</p>
+                <a href="#" class="btn btn-outline-ivoire-orange text-ivoire-orange">Demander</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Process Section -->
+<h2 class="text-center mb-4">Comment ça marche ?</h2>
+<div class="row mb-5">
+    <div class="col-md-12">
+        <div class="timeline">
+            <div class="row g-0">
+                <div class="col-md-3 text-center">
+                    <div class="timeline-step">
+                        <div class="timeline-icon bg-ivoire-orange">
+                            <i class="fas fa-file-alt text-white"></i>
+                        </div>
+                        <h4 class="mt-3">1. Demande</h4>
+                        <p>Remplissez le formulaire de demande en ligne</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="timeline-step">
+                        <div class="timeline-icon bg-ivoire-orange">
+                            <i class="fas fa-credit-card text-white"></i>
+                        </div>
+                        <h4 class="mt-3">2. Paiement</h4>
+                        <p>Effectuez le paiement en ligne sécurisé</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="timeline-step">
+                        <div class="timeline-icon bg-ivoire-orange">
+                            <i class="fas fa-search text-white"></i>
+                        </div>
+                        <h4 class="mt-3">3. Traitement</h4>
+                        <p>Nous traitons votre demande</p>
+                    </div>
+                </div>
+                <div class="col-md-3 text-center">
+                    <div class="timeline-step">
+                        <div class="timeline-icon bg-ivoire-orange">
+                            <i class="fas fa-file-pdf text-white"></i>
+                        </div>
+                        <h4 class="mt-3">4. Réception</h4>
+                        <p>Recevez votre acte par voie électronique ou postale</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row bg-light p-4 rounded mb-5">
+    <div class="col-md-4 text-center">
+        <h3 class="display-4 fw-bold text-ivoire-orange">10K+</h3>
+        <p class="lead">Demandes traitées</p>
+    </div>
+    <div class="col-md-4 text-center">
+        <h3 class="display-4 fw-bold text-ivoire-orange">98%</h3>
+        <p class="lead">Clients satisfaits</p>
+    </div>
+    <div class="col-md-4 text-center">
+        <h3 class="display-4 fw-bold text-ivoire-orange">24h</h3>
+        <p class="lead">Temps de traitement moyen</p>
+    </div>
+</div>
+
+    <!-- Témoignages ou engagement -->
+    <section class="bg-white py-5 text-center">
+    <div class="container">
+        <h2 class="mb-4">Pourquoi nous faire confiance ?</h2>
+        <p class="lead mb-4">Plus de 10 000 citoyens utilisent déjà notre plateforme pour leurs actes officiels.</p>
+        <div class="row">
+        <div class="col-md-3">
+            <h4 class="fw-bold text-success">100%</h4>
+            <p>Sécurisé</p>
+        </div>
+        <div class="col-md-3">
+            <h4 class="fw-bold text-primary">24/7</h4>
+            <p>Accessible en ligne</p>
+        </div>
+        <div class="col-md-3">
+            <h4 class="fw-bold text-warning">+10K</h4>
+            <p>Utilisateurs satisfaits</p>
+        </div>
+        <div class="col-md-3">
+            <h4 class="fw-bold text-danger">Zéro</h4>
+            <p>Déplacement nécessaire</p>
+        </div>
+        </div>
+    </div>
+    </section>
+    
+
+{% endblock %}

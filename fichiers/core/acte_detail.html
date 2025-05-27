@@ -1,0 +1,292 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Détail de la demande #{{ demande.reference }} - État Civil{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Accueil</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'core:mes_demandes' %}">Mes demandes</a></li>
+                <li class="breadcrumb-item active">Demande #{{ demande.reference }}</li>
+            </ol>
+        </nav>
+
+        <!-- Statut et informations principales -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header {% if demande.status == 'completed' %}bg-success{% elif demande.status == 'rejected' %}bg-danger{% elif demande.status == 'processing' %}bg-primary{% else %}bg-warning{% endif %} text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h2 class="card-title mb-0">
+                        Demande #{{ demande.reference }}
+                    </h2>
+                    <span class="badge bg-white text-{% if demande.status == 'completed' %}success{% elif demande.status == 'rejected' %}danger{% elif demande.status == 'processing' %}primary{% else %}warning{% endif %}">
+                        {% if demande.status == 'pending' %}En attente de paiement
+                        {% elif demande.status == 'paid' %}Payée, en attente de traitement
+                        {% elif demande.status == 'processing' %}En cours de traitement
+                        {% elif demande.status == 'completed' %}Terminée
+                        {% elif demande.status == 'rejected' %}Rejetée
+                        {% else %}{{ demande.get_status_display }}{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Date de demande :</strong> {{ demande.date_creation|date:"d/m/Y H:i" }}</p>
+                        <p>
+                            <strong>Type d'acte :</strong> 
+                            {% if demande.type_acte == 'naissance' %}Acte de naissance
+                            {% elif demande.type_acte == 'mariage' %}Acte de mariage
+                            {% elif demande.type_acte == 'deces' %}Acte de décès
+                            {% endif %}
+                        </p>
+                        <p>
+                            <strong>Format :</strong>
+                            {% if demande.format_acte == 'extrait' %}Extrait simple
+                            {% elif demande.format_acte == 'extrait_filiation' %}Extrait avec filiation
+                            {% elif demande.format_acte == 'copie' %}Copie intégrale
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6">
+                        <p>
+                            <strong>Mode de livraison :</strong>
+                            {% if demande.mode_livraison == 'numerique' %}Numérique (PDF)
+                            {% elif demande.mode_livraison == 'postal' %}Courrier postal
+                            {% endif %}
+                        </p>
+                        <p><strong>Motif :</strong> {{ demande.get_motif_display }}</p>
+                        {% if demande.date_traitement %}
+                        <p><strong>Date de traitement :</strong> {{ demande.date_traitement|date:"d/m/Y" }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if demande.status == 'pending' %}
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Votre demande est en attente de paiement. Veuillez procéder au paiement pour qu'elle soit traitée.
+                    <div class="mt-3">
+                        <a href="{% url 'core:payment_process' demande.id %}" class="btn btn-primary">
+                            <i class="fas fa-credit-card me-2"></i>Payer maintenant
+                        </a>
+                    </div>
+                </div>
+                {% elif demande.status == 'rejected' %}
+                <div class="alert alert-danger">
+                    <i class="fas fa-times-circle me-2"></i>Votre demande a été rejetée pour la raison suivante : {{ demande.raison_rejet }}
+                </div>
+                {% elif demande.status == 'completed' and demande.mode_livraison == 'numerique' %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>Votre demande a été traitée avec succès. Vous pouvez télécharger votre acte ci-dessous.
+                    <div class="mt-3">
+                        <a href="{% url 'core:download_acte' demande.id %}" class="btn btn-success">
+                            <i class="fas fa-download me-2"></i>Télécharger l'acte
+                        </a>
+                    </div>
+                </div>
+                {% elif demande.status == 'completed' and demande.mode_livraison == 'postal' %}
+                <div class="alert alert-success">
+                    <i class="fas fa-check-circle me-2"></i>Votre demande a été traitée avec succès. Votre acte a été envoyé par courrier postal le {{ demande.date_envoi|date:"d/m/Y" }}.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Détails de l'acte -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h3 class="card-title mb-0">Informations sur l'acte</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Nom :</strong> {{ demande.nom }}</p>
+                        <p><strong>Prénom :</strong> {{ demande.prenom }}</p>
+                        <p><strong>Date de l'événement :</strong> {{ demande.date_evenement|date:"d/m/Y" }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Lieu de l'événement :</strong> {{ demande.lieu_evenement }}</p>
+                        
+                        {% if demande.type_acte == 'naissance' %}
+                        <p><strong>Nom du père :</strong> {{ demande.nom_pere|default:"Non renseigné" }}</p>
+                        <p><strong>Nom de la mère :</strong> {{ demande.nom_mere|default:"Non renseigné" }}</p>
+                        
+                        {% elif demande.type_acte == 'mariage' %}
+                        <p><strong>Nom du conjoint :</strong> {{ demande.nom_conjoint }}</p>
+                        <p><strong>Prénom du conjoint :</strong> {{ demande.prenom_conjoint }}</p>
+                        
+                        {% elif demande.type_acte == 'deces' %}
+                        {% if demande.defunt_inconnu %}
+                        <p><strong>Note :</strong> Identité exacte du défunt inconnue</p>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if demande.mode_livraison == 'postal' %}
+        <!-- Adresse de livraison -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h3 class="card-title mb-0">Adresse de livraison</h3>
+            </div>
+            <div class="card-body">
+                <address>
+                    {{ demande.adresse }}<br>
+                    {{ demande.code_postal }} {{ demande.ville }}<br>
+                    {{ demande.get_pays_display }}
+                </address>
+                
+                {% if demande.status == 'completed' and demande.numero_suivi %}
+                <div class="mt-3">
+                    <p><strong>Numéro de suivi :</strong> {{ demande.numero_suivi }}</p>
+                    <a href="{{ demande.lien_suivi }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-truck me-2"></i>Suivre mon envoi
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Historique -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+                <h3 class="card-title mb-0">Historique</h3>
+            </div>
+            <div class="card-body">
+                <ul class="timeline">
+                    <li class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h5 class="timeline-title">Demande créée</h5>
+                            <p class="timeline-date">{{ demande.date_creation|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </li>
+                    
+                    {% if demande.date_paiement %}
+                    <li class="timeline-item">
+                        <div class="timeline-marker bg-success"></div>
+                        <div class="timeline-content">
+                            <h5 class="timeline-title">Paiement effectué</h5>
+                            <p class="timeline-date">{{ demande.date_paiement|date:"d/m/Y H:i" }}</p>
+                            <p>Montant : {{ demande.montant_total }} €</p>
+                        </div>
+                    </li>
+                    {% endif %}
+                    
+                    {% if demande.date_debut_traitement %}
+                    <li class="timeline-item">
+                        <div class="timeline-marker bg-info"></div>
+                        <div class="timeline-content">
+                            <h5 class="timeline-title">Traitement commencé</h5>
+                            <p class="timeline-date">{{ demande.date_debut_traitement|date:"d/m/Y H:i" }}</p>
+                        </div>
+                    </li>
+                    {% endif %}
+                    
+                    {% if demande.date_traitement %}
+                    <li class="timeline-item">
+                        <div class="timeline-marker {% if demande.status == 'completed' %}bg-success{% elif demande.status == 'rejected' %}bg-danger{% else %}bg-warning{% endif %}"></div>
+                        <div class="timeline-content">
+                            <h5 class="timeline-title">
+                                {% if demande.status == 'completed' %}Demande traitée avec succès
+                                {% elif demande.status == 'rejected' %}Demande rejetée
+                                {% else %}Traitement terminé
+                                {% endif %}
+                            </h5>
+                            <p class="timeline-date">{{ demande.date_traitement|date:"d/m/Y H:i" }}</p>
+                            {% if demande.status == 'rejected' %}
+                            <p>Raison : {{ demande.raison_rejet }}</p>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endif %}
+                    
+                    {% if demande.date_envoi and demande.mode_livraison == 'postal' %}
+                    <li class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h5 class="timeline-title">Acte envoyé par courrier</h5>
+                            <p class="timeline-date">{{ demande.date_envoi|date:"d/m/Y" }}</p>
+                            {% if demande.numero_suivi %}
+                            <p>Numéro de suivi : {{ demande.numero_suivi }}</p>
+                            {% endif %}
+                        </div>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+        
+        <!-- Actions disponibles -->
+        <div class="d-flex justify-content-between">
+            <a href="{% url 'core:mes_demandes' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Retour à mes demandes
+            </a>
+            
+            {% if demande.status == 'pending' %}
+            <a href="{% url 'core:payment_process' demande.id %}" class="btn btn-primary">
+                <i class="fas fa-credit-card me-2"></i>Payer maintenant
+            </a>
+            {% elif demande.status == 'completed' and demande.mode_livraison == 'numerique' %}
+            <a href="{% url 'core:download_acte' demande.id %}" class="btn btn-success">
+                <i class="fas fa-download me-2"></i>Télécharger l'acte
+            </a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 30px;
+        list-style: none;
+    }
+    
+    .timeline-item {
+        position: relative;
+        padding-bottom: 30px;
+    }
+    
+    .timeline-item:last-child {
+        padding-bottom: 0;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        width: 15px;
+        height: 15px;
+        border-radius: 50%;
+        left: -30px;
+        top: 3px;
+    }
+    
+    .timeline-item:not(:last-child):before {
+        content: '';
+        position: absolute;
+        left: -23px;
+        top: 18px;
+        height: calc(100% - 15px);
+        width: 2px;
+        background-color: #dee2e6;
+    }
+    
+    .timeline-title {
+        margin-bottom: 5px;
+        font-weight: 600;
+    }
+    
+    .timeline-date {
+        color: #6c757d;
+        font-size: 0.9rem;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}

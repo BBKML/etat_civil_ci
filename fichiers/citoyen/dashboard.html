@@ -1,0 +1,46 @@
+{% extends 'base_citoyen.html' %}
+
+{% block page_title %}
+<i class="bi bi-house-door-fill me-2"></i> Bienvenue, {{ request.user.first_name }}
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="alert alert-info shadow-sm" role="alert">
+    <p class="mb-0">Vous pouvez suivre l’état de vos demandes, en effectuer de nouvelles et télécharger vos actes officiels validés.</p>
+</div>
+
+<div class="row">
+    <!-- Widget : Mes demandes -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-info">
+            <div class="card-body">
+                <h5 class="card-title text-info"><i class="bi bi-journal-text me-2"></i>Mes demandes</h5>
+                <p class="card-text">Consultez l'historique et l'état de vos demandes.</p>
+                <a href="" class="btn btn-outline-info w-100">Voir</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Widget : Nouvelle demande -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-success">
+            <div class="card-body">
+                <h5 class="card-title text-success"><i class="bi bi-file-earmark-plus me-2"></i>Nouvelle demande</h5>
+                <p class="card-text">Soumettez une nouvelle demande d'acte (naissance, mariage, décès).</p>
+                <a href="" class="btn btn-outline-success w-100">Demander</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Widget : Profil -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100 border-secondary">
+            <div class="card-body">
+                <h5 class="card-title text-secondary"><i class="bi bi-person-circle me-2"></i>Mon profil</h5>
+                <p class="card-text">Gérez vos informations personnelles et votre mot de passe.</p>
+                <a href="" class="btn btn-outline-secondary w-100">Accéder</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,375 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-form">
+        <div class="auth-header">
+            <h1>Connexion</h1>
+            <p>Connectez-vous pour accéder à votre espace personnel</p>
+        </div>
+
+        {% if form.non_field_errors %}
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Erreur :</strong> {{ form.non_field_errors.0 }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+            </div>
+        {% endif %}
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <form id="loginForm" method="post" action="{% url 'login' %}">
+            {% csrf_token %}
+            
+            <div class="form-group">
+                <label for="{{ form.username.id_for_label }}">Nom d'utilisateur ou email *</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                    <div class="text-danger small">{{ form.username.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-group">
+                <label for="{{ form.password.id_for_label }}">Mot de passe *</label>
+                <div class="password-input">
+                    {{ form.password }}
+                    <button type="button" class="toggle-password" aria-label="Afficher le mot de passe">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                {% if form.password.errors %}
+                    <div class="text-danger small">{{ form.password.errors.0 }}</div>
+                {% endif %}
+            </div>
+
+            <div class="form-options">
+                <div class="checkbox-group">
+                    <input type="checkbox" name="remember_me" id="id_remember_me"
+                           {% if form.remember_me.value %}checked{% endif %}>
+                    <label for="id_remember_me">Se souvenir de moi</label>
+                </div>
+                <a href="" class="forgot-password">Mot de passe oublié ?</a>
+            </div>
+
+            {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+            {% endif %}
+
+            <button type="submit" class="btn btn-login">
+                <span class="btn-text">Se connecter</span>
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            </button>
+
+            <div class="auth-footer">
+                <p>Vous n'avez pas de compte ? <a href="{% url 'core:register' %}">S'inscrire</a></p>
+            </div>
+        </form>
+    </div>
+
+    <div class="auth-image">
+        <div class="auth-image-overlay"></div>
+        <div class="auth-image-content">
+            <h2>Service d'État Civil en Ligne</h2>
+            <p>Accédez à vos documents administratifs en quelques clics</p>
+        </div>
+    </div>
+</div>
+<style>
+    /* Structure principale */
+    .auth-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        min-height: calc(100vh - 160px);
+    }
+    
+    /* Partie formulaire */
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 2rem;
+        max-width: 500px;
+        margin: 0 auto;
+        width: 100%;
+    }
+    
+    .auth-header {
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .auth-header h1 {
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+        font-size: 2rem;
+    }
+    
+    .auth-header p {
+        color: #666;
+        font-size: 1.1rem;
+    }
+    
+    /* Champs de formulaire */
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
+        color: var(--dark-color);
+    }
+    
+    .form-group input {
+        width: 100%;
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        font-size: 1rem;
+        transition: border-color 0.3s ease;
+    }
+    
+    .form-group input:focus {
+        border-color: var(--primary-color);
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(0, 150, 136, 0.2);
+    }
+    
+    .form-text {
+        display: block;
+        margin-top: 0.25rem;
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+    
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    
+    .text-danger {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+    
+    /* Champ mot de passe */
+    .password-input {
+        position: relative;
+    }
+    
+    .password-input input {
+        padding-right: 40px;
+    }
+    
+    .toggle-password {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: #666;
+        cursor: pointer;
+        padding: 0.5rem;
+        transition: color 0.3s ease;
+    }
+    
+    .toggle-password:hover {
+        color: var(--primary-color);
+    }
+    
+    /* Options */
+    .form-options {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+    }
+    
+    .checkbox-group input {
+        width: auto;
+        margin-right: 0.5rem;
+    }
+    
+    .forgot-password {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: opacity 0.3s ease;
+    }
+    
+    .forgot-password:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+    
+    /* Bouton */
+    .btn-login {
+        width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-login:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    
+    .btn-text {
+        display: inline-block;
+        transition: opacity 0.3s ease;
+    }
+    
+    .btn-login.loading .btn-text {
+        opacity: 0.5;
+    }
+    
+    .btn-login .spinner-border {
+        position: absolute;
+        left: 50%;
+        transform: translateX(-50%);
+    }
+    
+    /* Pied de page */
+    .auth-footer {
+        text-align: center;
+        color: #666;
+    }
+    
+    .auth-footer a {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        transition: opacity 0.3s ease;
+    }
+    
+    .auth-footer a:hover {
+        opacity: 0.8;
+        text-decoration: underline;
+    }
+    
+    /* Partie image */
+    .auth-image {
+        position: relative;
+        background: url('https://netafrique.net/wp-content/uploads/2021/03/Extrait-Nais.jpg') center/cover no-repeat;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .auth-image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 150, 136, 0.7);
+    }
+    
+    .auth-image-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        padding: 2rem;
+        max-width: 80%;
+        text-align: center;
+    }
+    
+    .auth-image-content h2 {
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+    
+    .auth-image-content p {
+        font-size: 1.1rem;
+        opacity: 0.9;
+    }
+    
+    /* Alertes */
+    .alert {
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Responsive */
+    @media (max-width: 992px) {
+        .auth-container {
+            grid-template-columns: 1fr;
+        }
+        
+        .auth-image {
+            display: none;
+        }
+        
+        .auth-form {
+            padding: 1.5rem;
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .auth-form {
+            padding: 1rem;
+        }
+        
+        .form-options {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .forgot-password {
+            margin-top: 0.5rem;
+        }
+    }
+</style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const togglePassword = document.querySelector('.toggle-password');
+        const passwordInput = document.getElementById('{{ form.password.id_for_label }}');
+        
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function () {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                this.innerHTML = type === 'password' ? '<i class="fas fa-eye"></i>' : '<i class="fas fa-eye-slash"></i>';
+            });
+        }
+
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.querySelector('.btn-login');
+        
+        loginForm.addEventListener('submit', function(e) {
+            loginBtn.classList.add('loading');
+            loginBtn.disabled = true;
+
+            const username = document.getElementById('{{ form.username.id_for_label }}').value.trim();
+            const password = document.getElementById('{{ form.password.id_for_label }}').value.trim();
+
+            if (!username || !password) {
+                e.preventDefault();
+                loginBtn.classList.remove('loading');
+                loginBtn.disabled = false;
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+
+

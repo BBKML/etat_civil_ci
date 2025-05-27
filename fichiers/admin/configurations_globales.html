@@ -1,0 +1,21 @@
+{% extends 'base_dashboard.html' %}
+
+{% block page_title %}
+<i class="bi bi-gear-fill me-2"></i> Configurations globales
+{% endblock %}
+
+{% block dashboard_content %}
+<h5>Paramètres généraux de l'application</h5>
+<form method="post">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label class="form-label">Nom de la plateforme</label>
+        <input type="text" name="nom_plateforme" class="form-control" placeholder="Ex : eActe National">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Email de contact</label>
+        <input type="email" name="email_contact" class="form-control" placeholder="contact@example.com">
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+</form>
+{% endblock %}

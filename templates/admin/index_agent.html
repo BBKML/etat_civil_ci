@@ -1,0 +1,201 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block content %}
+<div class="dashboard-container">
+    <!-- Dashboard Header Agent -->
+    <div class="dashboard-header">
+        <h2>
+            <i class="fas fa-user-tie"></i> Tableau de Bord Agent
+            <small>Bienvenue, {{ request.user.get_full_name|default:request.user.username }}</small>
+        </h2>
+    </div>
+
+    <!-- Statistiques Agent -->
+    <div class="dashboard-stats">
+        {% if user_role in 'AGENT_COMMUNE,MAIRE' %}
+        <div class="stat-card today-card">
+            <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+            <div>
+                <span class="stat-number">{{ dashboard_data.demandes_aujourd_hui }}</span>
+                <span class="stat-label">Demandes aujourd'hui</span>
+            </div>
+        </div>
+        <div class="stat-card pending-card">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div>
+                <span class="stat-number">{{ dashboard_data.demandes_en_attente }}</span>
+                <span class="stat-label">Demandes en attente</span>
+            </div>
+        </div>
+        <div class="stat-card processed-card">
+            <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+            <div>
+                <span class="stat-number">{{ dashboard_data.demandes_traitees_mois }}</span>
+                <span class="stat-label">Traitées ce mois</span>
+            </div>
+        </div>
+        <div class="stat-card revenue-card">
+            <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <div>
+                <span class="stat-number">{{ dashboard_data.revenus_mois|floatformat:0 }}</span>
+                <span class="stat-label">FCFA revenus ce mois</span>
+            </div>
+        </div>
+        {% elif user_role in 'SOUS_PREFET,AGENT_SOUS_PREFECTURE' %}
+        <div class="stat-card today-card">
+            <div class="stat-icon"><i class="fas fa-calendar-day"></i></div>
+            <div>
+                <span class="stat-number">{{ dashboard_data.demandes_aujourd_hui }}</span>
+                <span class="stat-label">Demandes aujourd'hui</span>
+            </div>
+        </div>
+        <div class="stat-card pending-card">
+            <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            <div>
+                <span class="stat-number">{{ dashboard_data.demandes_en_attente }}</span>
+                <span class="stat-label">Demandes en attente</span>
+            </div>
+        </div>
+        <div class="stat-card communes-card">
+            <div class="stat-icon"><i class="fas fa-city"></i></div>
+            <div>
+                <span class="stat-number">{{ dashboard_data.communes_geres }}</span>
+                <span class="stat-label">Communes gérées</span>
+            </div>
+        </div>
+        <div class="stat-card revenue-card">
+            <div class="stat-icon"><i class="fas fa-money-bill-wave"></i></div>
+            <div>
+                <span class="stat-number">{{ dashboard_data.revenus_mois|floatformat:0 }}</span>
+                <span class="stat-label">FCFA revenus ce mois</span>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Actions Rapides -->
+    <div class="quick-actions">
+        <h3><i class="fas fa-bolt"></i> Actions Rapides</h3>
+        <div class="action-buttons">
+            {% if user_role in 'AGENT_COMMUNE,MAIRE' %}
+            <a href="{% url 'admin:core_demandeacte_changelist' %}?statut=EN_ATTENTE" class="action-btn warning">
+                <i class="fas fa-clock"></i> Voir demandes en attente
+            </a>
+            <a href="{% url 'admin:core_actenaissance_add' %}" class="action-btn">
+                <i class="fas fa-baby"></i> Enregistrer naissance
+            </a>
+            <a href="{% url 'admin:core_actedeces_add' %}" class="action-btn">
+                <i class="fas fa-cross"></i> Enregistrer décès
+            </a>
+            {% elif user_role in 'SOUS_PREFET,AGENT_SOUS_PREFECTURE' %}
+            <a href="{% url 'admin:core_demandeacte_changelist' %}?statut=EN_ATTENTE" class="action-btn warning">
+                <i class="fas fa-clock"></i> Voir demandes en attente
+            </a>
+            <a href="{% url 'admin:core_commune_changelist' %}" class="action-btn">
+                <i class="fas fa-city"></i> Gérer les communes
+            </a>
+            {% endif %}
+            <a href="{% url 'admin:password_change' %}" class="action-btn secondary">
+                <i class="fas fa-key"></i> Changer mot de passe
+            </a>
+        </div>
+    </div>
+
+    <!-- Demandes Récentes -->
+    <div class="dashboard-section">
+        <h3><i class="fas fa-history"></i> Demandes Récentes</h3>
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>N° Demande</th>
+                        <th>Type</th>
+                        <th>Personne concernée</th>
+                        <th>Date</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for demande in recent_demandes %}
+                    <tr>
+                        <td>{{ demande.numero_demande }}</td>
+                        <td>{{ demande.get_type_acte_display }}</td>
+                        <td>
+                            {% if demande.personne_concernee %}
+                                {{ demande.personne_concernee.nom }} {{ demande.personne_concernee.prenoms }}
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                        <td>{{ demande.date_demande|date:"d/m/Y" }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if demande.statut == 'EN_ATTENTE' %}bg-warning
+                                {% elif demande.statut == 'APPROUVE' %}bg-info
+                                {% elif demande.statut == 'DELIVRE' %}bg-success
+                                {% elif demande.statut == 'REJETE' %}bg-danger
+                                {% endif %}">
+                                {{ demande.get_statut_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <a href="{% url 'admin:core_demandeacte_change' demande.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Traiter
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">Aucune demande récente</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Activité Récente -->
+    <div class="recent-activity">
+        <h3><i class="fas fa-list-alt"></i> Activité Récente</h3>
+        {% for log in recent_logs %}
+        <div class="activity-item">
+            <div class="activity-icon status-pending">
+                <i class="fas fa-{{ log.get_icon }}"></i>
+            </div>
+            <div>
+                <strong>{{ log.utilisateur.get_full_name|default:log.utilisateur.username }}</strong>
+                {{ log.description }}
+                <div class="text-muted small">
+                    {{ log.date_action|timesince }} ago
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <p class="text-muted">Aucune activité récente</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+{{ block.super }}
+<script>
+    // Scripts spécifiques à l'interface agent
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mettre à jour les compteurs toutes les 30 secondes
+        setInterval(function() {
+            fetch('{% url "dashboard_data" %}')  <!-- Removed 'admin:' prefix -->
+                .then(response => response.json())
+                .then(data => {
+                    // Mettre à jour les statistiques
+                    document.querySelectorAll('.stat-number')[0].textContent = data.demandes_aujourd_hui;
+                    document.querySelectorAll('.stat-number')[1].textContent = data.demandes_en_attente;
+                    document.querySelectorAll('.stat-number')[2].textContent = data.demandes_traitees_mois;
+                    document.querySelectorAll('.stat-number')[3].textContent = data.revenus_mois;
+                });
+        }, 30000);
+    });
+</script>
+{% endblock %}

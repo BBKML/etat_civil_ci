@@ -1,0 +1,16 @@
+{% extends 'base_citoyen.html' %}
+
+{% block page_title %}
+<i class="bi bi-person-circle me-2"></i> Mon profil
+{% endblock %}
+
+{% block dashboard_content %}
+<h5>Informations personnelles</h5>
+<ul class="list-group">
+    <li class="list-group-item"><strong>Nom complet :</strong> {{ user.get_full_name }}</li>
+    <li class="list-group-item"><strong>Email :</strong> {{ user.email }}</li>
+    <li class="list-group-item"><strong>Téléphone :</strong> {{ user.profile.telephone }}</li>
+    <li class="list-group-item"><strong>Adresse :</strong> {{ user.profile.adresse }}</li>
+</ul>
+<a href="#" class="btn btn-secondary mt-3">Modifier mes informations</a>
+{% endblock %}

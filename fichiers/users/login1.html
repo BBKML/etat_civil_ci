@@ -1,0 +1,153 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block content %}
+<style>
+    .bg-custom-orange {
+        background-color: #F77F00;
+    }
+    .text-custom-orange {
+        color: #F77F00;
+    }
+    .btn-custom-orange {
+        background-color: #F77F00;
+        border-color: #F77F00;
+    }
+    .btn-custom-orange:hover {
+        background-color: #e67500;
+        border-color: #e67500;
+    }
+</style>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card shadow-sm">
+                <div class="card-header bg-custom-orange text-white text-center py-3">
+                    <h4 class="mb-0">Connexion</h4>
+                </div>
+                <div class="card-body p-4">
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <strong>Erreur :</strong> {{ form.non_field_errors.0 }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" action="{% url 'users:login' %}" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Nom d'utilisateur ou email</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <input type="text" name="username" id="id_username"
+                                       class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                                       value="{{ form.username.value|default:'' }}" required>
+                            </div>
+                            {% if form.username.errors %}
+                                <div class="invalid-feedback d-block">{{ form.username.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="id_password" class="form-label">Mot de passe</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                                <input type="password" name="password" id="id_password"
+                                       class="form-control {% if form.password.errors %}is-invalid{% endif %}" required>
+                                <button class="btn btn-outline-secondary toggle-password" type="button" tabindex="-1">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                            {% if form.password.errors %}
+                                <div class="invalid-feedback d-block">{{ form.password.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="remember_me" id="id_remember_me">
+                                <label class="form-check-label" for="id_remember_me">
+                                    Se souvenir de moi
+                                </label>
+                            </div>
+                            <a href="{% url 'users:password_reset' %}" class="text-custom-orange text-decoration-none">
+                                Mot de passe oublié?
+                            </a>
+                        </div>
+
+                        {% if 'next' in request.GET %}
+                            <input type="hidden" name="next" value="{{ request.GET.next }}">
+                        {% endif %}
+
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-custom-orange py-2">Se connecter</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer bg-light text-center py-3">
+                    <p class="mb-0">Vous n'avez pas de compte?
+                        <a href="{% url 'users:register' %}" class="text-custom-orange fw-semibold">Inscrivez-vous</a>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Informations supplémentaires -->
+            <div class="mt-4 text-center">
+                <p class="text-muted small">
+                    Pour toute assistance, contactez notre support au <br>
+                    <strong>+225 07 XX XX XX</strong> ou <a href="mailto:support@etatcivil.ci" class="text-decoration-none">support@etatcivil.ci</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Gestion de l'affichage du mot de passe
+        const toggleButtons = document.querySelectorAll('.toggle-password');
+
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const input = this.previousElementSibling;
+                const icon = this.querySelector('i');
+
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.classList.remove('bi-eye');
+                    icon.classList.add('bi-eye-slash');
+                } else {
+                    input.type = 'password';
+                    icon.classList.remove('bi-eye-slash');
+                    icon.classList.add('bi-eye');
+                }
+            });
+        });
+
+        // Validation du formulaire
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(event) {
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            form.classList.add('was-validated');
+        }, false);
+    });
+</script>
+{% endblock %}

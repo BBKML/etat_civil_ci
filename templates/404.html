@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card border-warning">
+                <div class="card-header bg-warning text-white">
+                    <h1><i class="fas fa-exclamation-triangle"></i> 404 - Page non trouvée</h1>
+                </div>
+                <div class="card-body">
+                    <h3 class="text-warning">La page que vous cherchez n'existe pas</h3>
+                    <p class="lead">Il semble que la page que vous essayez d'atteindre a été déplacée ou n'existe plus.</p>
+                    <div class="mt-4">
+                        <a href="" class="btn btn-primary">
+                            <i class="fas fa-home"></i> Retour à l'accueil
+                        </a>
+                        <a href="javascript:history.back()" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

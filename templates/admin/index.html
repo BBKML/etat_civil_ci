@@ -1,0 +1,452 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('État Civil CI') }}{% endblock %}
+
+{% block extrahead %}
+{{ block.super }}
+<style>
+    .dashboard-welcome {
+        background: linear-gradient(135deg, #ff7b00, #00a550);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        text-align: center;
+        box-shadow: 0 8px 32px rgba(255, 123, 0, 0.3);
+    }
+    
+    .welcome-title {
+        font-size: 2.5em;
+        margin-bottom: 10px;
+        font-weight: 300;
+    }
+    
+    .welcome-subtitle {
+        font-size: 1.2em;
+        opacity: 0.9;
+        margin-bottom: 20px;
+    }
+    
+    .welcome-time {
+        font-size: 0.95em;
+        opacity: 0.8;
+    }
+    
+    .app-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+    
+    .module {
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .module:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    
+    .module h2 {
+        background: #ff7b00 !important;
+        color: white !important;
+        padding: 20px;
+        margin: 0;
+        font-size: 1.3em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .module-content {
+        padding: 20px;
+    }
+    
+    .model-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .model-item {
+        border-bottom: 1px solid #f0f0f0;
+        transition: background-color 0.2s ease;
+    }
+    
+    .model-item:last-child {
+        border-bottom: none;
+    }
+    
+    .model-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .model-link {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 15px 0;
+        text-decoration: none;
+        color: #333;
+        transition: color 0.2s ease;
+    }
+    
+    .model-link:hover {
+        color: #ff7b00;
+        text-decoration: none;
+    }
+    
+    .model-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .model-icon {
+        width: 40px;
+        height: 40px;
+        background: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ff7b00;
+        font-size: 1.2em;
+    }
+    
+    .model-details h3 {
+        margin: 0;
+        font-size: 1.1em;
+        font-weight: 500;
+    }
+    
+    .model-details p {
+        margin: 2px 0 0 0;
+        font-size: 0.9em;
+        color: #666;
+    }
+    
+    .model-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .action-btn {
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85em;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        border: 1px solid transparent;
+    }
+    
+    .action-btn.add {
+        background: #28a745;
+        color: white;
+    }
+    
+    .action-btn.add:hover {
+        background: #218838;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .action-btn.change {
+        background: #17a2b8;
+        color: white;
+    }
+    
+    .action-btn.change:hover {
+        background: #138496;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .recent-actions {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        margin-top: 30px;
+    }
+    
+    .recent-actions h3 {
+        color: #333;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #ff7b00;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .action-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+    
+    .action-item {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .action-item:last-child {
+        border-bottom: none;
+    }
+    
+    .action-time {
+        color: #666;
+        font-size: 0.85em;
+        white-space: nowrap;
+        margin-right: 15px;
+        min-width: 80px;
+    }
+    
+    .action-desc {
+        flex: 1;
+    }
+    
+    .action-desc a {
+        color: #ff7b00;
+        text-decoration: none;
+    }
+    
+    .action-desc a:hover {
+        text-decoration: underline;
+    }
+    
+    .empty-dashboard {
+        text-align: center;
+        padding: 60px 20px;
+        color: #666;
+    }
+    
+    .empty-dashboard i {
+        font-size: 4em;
+        margin-bottom: 20px;
+        color: #ddd;
+    }
+    
+    /* Styles spécifiques par rôle */
+    .role-citoyen .module h2 { background: #007bff !important; }
+    .role-agent .module h2 { background: #28a745 !important; }
+    .role-admin .module h2 { background: #dc3545 !important; }
+    
+    @media (max-width: 768px) {
+        .app-list {
+            grid-template-columns: 1fr;
+        }
+        
+        .welcome-title {
+            font-size: 2em;
+        }
+        
+        .model-actions {
+            flex-direction: column;
+        }
+        
+        .action-btn {
+            font-size: 0.8em;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-welcome">
+    <h1 class="welcome-title">
+        <i class="fas fa-certificate"></i>
+        Bienvenue, {{ user.get_full_name|default:user.username }}
+    </h1>
+    <p class="welcome-subtitle">
+        {% if user.role == 'ADMINISTRATEUR' %}
+            Administration du système national d'état civil
+        {% elif user.role == 'MAIRE' %}
+            Gestion de l'état civil - {{ user.commune.nom|default:'Votre commune' }}
+        {% elif user.role == 'AGENT_COMMUNE' %}
+            Agent d'état civil - {{ user.commune.nom|default:'Votre commune' }}
+        {% elif user.role == 'SOUS_PREFET' %}
+            Sous-préfecture - {{ user.sous_prefecture.nom|default:'Votre sous-préfecture' }}
+        {% elif user.role == 'AGENT_SOUS_PREFECTURE' %}
+            Agent sous-préfecture - {{ user.sous_prefecture.nom|default:'Votre sous-préfecture' }}
+        {% else %}
+            Espace citoyen - Services d'état civil en ligne
+        {% endif %}
+    </p>
+    <div class="welcome-time">
+        <i class="fas fa-calendar-alt"></i>
+        {% now "l j F Y" %} - <i class="fas fa-clock"></i> {% now "H:i" %}
+    </div>
+</div>
+
+{% if app_list %}
+    <div class="app-list role-{{ user.role|lower }}">
+        {% for app in app_list %}
+            <div class="module">
+                <h2>
+                    {% if app.name == 'Core' %}
+                        <i class="fas fa-cogs"></i>
+                    {% elif app.name == 'Auth' or app.name == 'Authentication and Authorization' %}
+                        <i class="fas fa-users-cog"></i>
+                    {% else %}
+                        <i class="fas fa-folder"></i>
+                    {% endif %}
+                    {{ app.name }}
+                </h2>
+                <div class="module-content">
+                    <ul class="model-list">
+                        {% for model in app.models %}
+                            <li class="model-item">
+                                <div class="model-link">
+                                    <div class="model-info">
+                                        <div class="model-icon">
+                                            {% if 'user' in model.object_name|lower %}
+                                                <i class="fas fa-user"></i>
+                                            {% elif 'demande' in model.object_name|lower %}
+                                                <i class="fas fa-file-alt"></i>
+                                            {% elif 'acte' in model.object_name|lower %}
+                                                <i class="fas fa-certificate"></i>
+                                            {% elif 'commune' in model.object_name|lower %}
+                                                <i class="fas fa-building"></i>
+                                            {% elif 'paiement' in model.object_name|lower %}
+                                                <i class="fas fa-credit-card"></i>
+                                            {% elif 'statistique' in model.object_name|lower %}
+                                                <i class="fas fa-chart-bar"></i>
+                                            {% else %}
+                                                <i class="fas fa-database"></i>
+                                            {% endif %}
+                                        </div>
+                                        <div class="model-details">
+                                            <h3>{{ model.name }}</h3>
+                                            {% if model.object_name == 'DemandeActe' %}
+                                                <p>Gestion des demandes d'actes</p>
+                                            {% elif model.object_name == 'User' %}
+                                                <p>Gestion des utilisateurs</p>
+                                            {% elif model.object_name == 'ActeNaissance' %}
+                                                <p>Actes de naissance</p>
+                                            {% elif model.object_name == 'Mariage' %}
+                                                <p>Actes de mariage</p>
+                                            {% elif model.object_name == 'ActeDeces' %}
+                                                <p>Actes de décès</p>
+                                            {% elif model.object_name == 'Paiement' %}
+                                                <p>Transactions financières</p>
+                                            {% else %}
+                                                <p>{{ model.object_name }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    <div class="model-actions">
+                                        {% if model.add_url %}
+                                            <a href="{{ model.add_url }}" class="action-btn add">
+                                                <i class="fas fa-plus"></i> Ajouter
+                                            </a>
+                                        {% endif %}
+                                        {% if model.admin_url %}
+                                            <a href="{{ model.admin_url }}" class="action-btn change">
+                                                <i class="fas fa-list"></i> 
+                                                {% if user.role == 'CITOYEN' and model.object_name == 'DemandeActe' %}
+                                                    Mes demandes
+                                                {% else %}
+                                                    Voir tout
+                                                {% endif %}
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-dashboard">
+        <i class="fas fa-info-circle"></i>
+        <h3>Aucune application disponible</h3>
+        <p>Contactez votre administrateur pour obtenir les permissions nécessaires.</p>
+    </div>
+{% endif %}
+
+{% if user.role != 'CITOYEN' %}
+    <div class="recent-actions">
+        <h3>
+            <i class="fas fa-history"></i>
+            Actions récentes
+        </h3>
+        {% load log %}
+        {% get_admin_log 10 as admin_log for_user user %}
+        {% if admin_log %}
+            <ul class="action-list">
+                {% for entry in admin_log %}
+                    <li class="action-item">
+                        <span class="action-time">{{ entry.action_time|date:"H:i" }}</span>
+                        <div class="action-desc">
+                            {% if entry.is_addition %}
+                                <i class="fas fa-plus text-success"></i>
+                            {% elif entry.is_change %}
+                                <i class="fas fa-edit text-info"></i>
+                            {% elif entry.is_deletion %}
+                                <i class="fas fa-trash text-danger"></i>
+                            {% endif %}
+                            {% if entry.content_type %}
+                                <a href="{% url 'admin:'|add:entry.content_type.app_label|add:'_'|add:entry.content_type.model|add:'_changelist' %}">
+                                    {{ entry.content_type.name }}
+                                </a>
+                            {% endif %}
+                            {% if entry.object_repr %}
+                                "{{ entry.object_repr }}"
+                            {% endif %}
+                            {{ entry.get_change_message }}
+                        </div>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: #666; font-style: italic;">Aucune action récente.</p>
+        {% endif %}
+    </div>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animation d'entrée pour les modules
+        const modules = document.querySelectorAll('.module');
+        modules.forEach((module, index) => {
+            module.style.opacity = '0';
+            module.style.transform = 'translateY(20px)';
+            setTimeout(() => {
+                module.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                module.style.opacity = '1';
+                module.style.transform = 'translateY(0)';
+            }, index * 100);
+        });
+        
+        // Mise à jour de l'heure en temps réel
+        function updateTime() {
+            const now = new Date();
+            const timeElement = document.querySelector('.welcome-time');
+            if (timeElement) {
+                const time = now.toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+                timeElement.innerHTML = timeElement.innerHTML.replace(/\d{2}:\d{2}/, time);
+            }
+        }
+        
+        setInterval(updateTime, 60000); // Mise à jour chaque minute
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends 'base_admin.html' %}
+
+{% block page_title %}
+<i class="bi bi-shield-lock-fill me-2"></i> Administration générale
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="alert alert-secondary shadow-sm">
+    Bienvenue dans l’espace d’administration. Vous pouvez :
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 border-primary">
+            <div class="card-body">
+                <h5 class="card-title text-primary">
+                    <i class="bi bi-gear-fill me-2"></i> Configurations globales
+                </h5>
+                <p class="card-text">Gérez les paramètres systèmes et options globales.</p>
+                <a href="{% url 'configurations_globales' %}" class="btn btn-outline-primary w-100">Configurer</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 border-success">
+            <div class="card-body">
+                <h5 class="card-title text-success">
+                    <i class="bi bi-building me-2"></i> Actes par structure
+                </h5>
+                <p class="card-text">Surveillez les actes traités dans chaque structure.</p>
+                <a href="{% url 'actes_par_structure' %}" class="btn btn-outline-success w-100">Voir</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 border-warning">
+            <div class="card-body">
+                <h5 class="card-title text-warning">
+                    <i class="bi bi-people-fill me-2"></i> Gestion des utilisateurs
+                </h5>
+                <p class="card-text">Ajoutez, modifiez ou supprimez des comptes utilisateurs.</p>
+                <a href="{% url 'gestion_utilisateurs' %}" class="btn btn-outline-warning w-100">Gérer</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6 mb-4">
+        <div class="card h-100 border-dark">
+            <div class="card-body">
+                <h5 class="card-title text-dark">
+                    <i class="bi bi-diagram-3-fill me-2"></i> Gestion des structures
+                </h5>
+                <p class="card-text">Contrôlez les communes, sous-préfectures et entités liées.</p>
+                <a href="{% url 'gestion_structures' %}" class="btn btn-outline-dark w-100">Accéder</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

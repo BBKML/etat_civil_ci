@@ -1,0 +1,265 @@
+{% extends 'core/base.html' %}
+
+{% block extra_css %}
+<style>
+    /* Styles personnalisés */
+    .demandes-container {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 25px;
+        margin-top: 30px;
+    }
+
+    .demandes-header {
+        border-bottom: 2px solid #dee2e6;
+        padding-bottom: 15px;
+        margin-bottom: 25px;
+    }
+
+    .demandes-table {
+        background-color: white;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .statut-badge {
+        font-size: 0.85rem;
+        padding: 5px 10px;
+        border-radius: 20px;
+        font-weight: 500;
+    }
+
+    .statut-en-attente {
+        background-color: #fff3cd;
+        color: #856404;
+    }
+
+    .statut-validee {
+        background-color: #d4edda;
+        color: #155724;
+    }
+
+    .statut-rejetee {
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+
+    .statut-en-cours {
+        background-color: #cce5ff;
+        color: #004085;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px;
+        color: #6c757d;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 15px;
+        color: #adb5bd;
+    }
+
+    .action-btn {
+        padding: 3px 8px;
+        font-size: 0.85rem;
+        margin-right: 5px;
+    }
+
+    .btn-ivoire-orange {
+        background-color: #F77F00;
+        color: white;
+    }
+
+    .btn-outline-ivoire-orange {
+        border-color: #F77F00;
+        color: #F77F00;
+    }
+
+    .btn-outline-ivoire-orange:hover {
+        background-color: #F77F00;
+        color: white;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container demandes-container">
+    <div class="demandes-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <h2 class="mb-0"><i class="fas fa-list-check me-2"></i>Mes Demandes</h2>
+            <a href="#" class="btn btn-ivoire-orange">
+                <i class="fas fa-plus me-1"></i> Nouvelle demande
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover demandes-table">
+            <thead class="table-light">
+                <tr>
+                    <th>Référence</th>
+                    <th>Type</th>
+                    <th>Date</th>
+                    <th>Statut</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for demande in demandes %}
+                <tr>
+                    <td>
+                        <strong>{{ demande.numero_reference }}</strong>
+                    </td>
+                    <td>
+                        <i class="fas
+                            {% if demande.type_acte.nom == 'Naissance' %}fa-baby
+                            {% elif demande.type_acte.nom == 'Mariage' %}fa-ring
+                            {% elif demande.type_acte.nom == 'Décès' %}fa-book
+                            {% else %}fa-file-alt{% endif %}
+                            me-2"></i>
+                        {{ demande.type_acte.nom }}
+                    </td>
+                    <td>{{ demande.date_demande|date:"d/m/Y" }}</td>
+                    <td>
+                        <span class="statut-badge
+                            {% if demande.statut == 'en_attente' %}statut-en-attente
+                            {% elif demande.statut == 'validee' %}statut-validee
+                            {% elif demande.statut == 'rejetee' %}statut-rejetee
+                            {% else %}statut-en-cours{% endif %}">
+                            {{ demande.get_statut_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="#"
+                           class="btn btn-sm btn-outline-ivoire-orange action-btn"
+                           title="Voir détails">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if demande.statut == 'en_attente' %}
+                        <button class="btn btn-sm btn-outline-danger action-btn annuler-btn"
+                                data-demande-id ="{{ demande.id }}"
+                                title="Annuler demande">
+                            <i class="fas fa-times"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="fas fa-inbox"></i>
+                            <h4>Aucune demande trouvée</h4>
+                            <p>Vous n'avez pas encore effectué de demande</p>
+                            <a href="#" class="btn btn-ivoire-orange mt-2">
+                                <i class="fas fa-plus me-1"></i> Faire une demande
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if demandes.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center mt-4">
+            {% if demandes.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ demandes.previous_page_number }}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for num in demandes.paginator.page_range %}
+                {% if demandes.number == num %}
+                <li class="page-item active"><a class="page-link" href="#">{{ num }}</a></li>
+                {% elif num > demandes.number|add:'-3' and num < demandes.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+
+            {% if demandes.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ demandes.next_page_number }}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ demandes.paginator.num_pages }}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gestion des boutons d'annulation
+    const annulerBtns = document.querySelectorAll('.annuler-btn');
+
+    annulerBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const demandeId = this.getAttribute('data-demande-id');
+
+            if (confirm("Êtes-vous sûr de vouloir annuler cette demande ?")) {
+                fetch(`/api/demandes/${demandeId}/annuler/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Recharger la page ou mettre à jour la ligne
+                        location.reload();
+                    } else {
+                        alert("Erreur lors de l'annulation: " + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert("Une erreur est survenue");
+                });
+            }
+        });
+    });
+
+    // Animation au survol des lignes
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach(row => {
+        row.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateX(5px)';
+            this.style.transition = 'transform 0.2s ease';
+        });
+        row.addEventListener('mouseleave', function() {
+            this.style.transform = '';
+        });
+    });
+
+    // Tooltips pour les boutons d'action
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+});
+</script>
+{% endblock %}

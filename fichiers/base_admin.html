@@ -1,0 +1,99 @@
+{% extends 'base_dashboard.html' %}
+
+{% block sidebar %}
+<ul class="nav flex-column">
+    <li class="nav-item mb-2">
+        <a href="{% url 'admin_configurations' %}" class="nav-link text-white">
+            <i class="bi bi-gear-fill me-1"></i> Configurations globales
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a href="{% url 'admin_actes_par_structure' %}" class="nav-link text-white">
+            <i class="bi bi-building me-1"></i> Actes par structure
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a href="{% url 'admin_gestion_utilisateurs' %}" class="nav-link text-white">
+            <i class="bi bi-people-fill me-1"></i> Gestion des utilisateurs
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a href="{% url 'admin_gestion_structures' %}" class="nav-link text-white">
+            <i class="bi bi-diagram-3-fill me-1"></i> Gestion des structures
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a href="{% url 'admin_statistiques' %}" class="nav-link text-white">
+            <i class="bi bi-bar-chart-line-fill me-1"></i> Statistiques
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a href="{% url 'admin_journal_activite' %}" class="nav-link text-white">
+            <i class="bi bi-clock-history me-1"></i> Journal d'activité
+        </a>
+    </li>
+    <li class="nav-item mb-2">
+        <a href="{% url 'admin_gestion_timbres' %}" class="nav-link text-white">
+            <i class="bi bi-currency-exchange me-1"></i> Gestion des timbres
+        </a>
+    </li>
+</ul>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Tableau de bord Administrateur</h2>
+
+    <div class="row">
+        <!-- Bloc Statistiques -->
+        <div class="col-md-3">
+            <div class="card bg-primary text-white mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Demandes totales</h5>
+                    <p class="card-text display-6">{{ total_demandes }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Revenus totaux</h5>
+                    <p class="card-text display-6">{{ total_revenus }} FCFA</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-dark mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Utilisateurs</h5>
+                    <p class="card-text display-6">{{ total_utilisateurs }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-info text-white mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Structures</h5>
+                    <p class="card-text display-6">{{ total_structures }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dernières activités -->
+    <div class="card mt-4">
+        <div class="card-header">
+            Dernières activités
+        </div>
+        <ul class="list-group list-group-flush">
+            {% for log in journal_activites %}
+                <li class="list-group-item">
+                    <i class="bi bi-activity"></i> {{ log.user }} a {{ log.action }} à {{ log.date|date:"d/m/Y H:i" }}
+                </li>
+            {% empty %}
+                <li class="list-group-item">Aucune activité récente.</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

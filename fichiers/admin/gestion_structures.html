@@ -1,0 +1,31 @@
+{% extends 'base_dashboard.html' %}
+
+{% block page_title %}
+<i class="bi bi-diagram-3-fill me-2"></i> Gestion des structures
+{% endblock %}
+
+{% block dashboard_content %}
+<h5>Structures enregistrées</h5>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Nom de la structure</th>
+            <th>Localisation</th>
+            <th>Responsable</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Mairie de Yopougon</td>
+            <td>Abidjan</td>
+            <td>M. Tra Bi</td>
+            <td>
+                <a href="#" class="btn btn-sm btn-outline-primary">Éditer</a>
+                <a href="#" class="btn btn-sm btn-outline-danger">Supprimer</a>
+            </td>
+        </tr>
+    </tbody>
+</table>
+<a href="#" class="btn btn-primary mt-3">Ajouter une nouvelle structure</a>
+{% endblock %}

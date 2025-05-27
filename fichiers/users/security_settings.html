@@ -1,0 +1,57 @@
+{% extends 'core/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+
+            <h2 class="mb-4">Paramètres de sécurité</h2>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-lock me-2 text-primary"></i>Authentification à deux facteurs (2FA)
+                    </h5>
+
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show mt-3" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+
+                    <form method="post" action="{% url 'users:toggle_2fa' %}">
+                        {% csrf_token %}
+                        <div class="form-check form-switch mt-4">
+                            <input class="form-check-input" type="checkbox"
+                                   id="twoFactorToggle"
+                                   name="two_factor_enabled"
+                                   {% if request.user.two_factor_enabled %}checked{% endif %}
+                                   onchange="this.form.submit()">
+                            <label class="form-check-label" for="twoFactorToggle">
+                                Activer l'authentification à deux facteurs
+                            </label>
+                        </div>
+                    </form>
+
+                    {% if request.user.two_factor_enabled %}
+                        <div class="alert alert-info mt-4">
+                            <i class="fas fa-info-circle"></i>
+                            L'authentification à deux facteurs est actuellement <strong>activée</strong> sur votre compte.
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning mt-4">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            L'authentification à deux facteurs est <strong>désactivée</strong>. Nous vous recommandons de l'activer pour plus de sécurité.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}

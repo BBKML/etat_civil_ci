@@ -1,0 +1,45 @@
+
+.main-header .navbar-brand {
+    background: linear-gradient(45deg, #ff7b00, #00a550) !important;
+}
+
+.sidebar-dark-primary .nav-sidebar > .nav-item > .nav-link.active {
+    background-color: #ff7b00 !important;
+}
+
+/* Style pour les statuts des demandes */
+.status-en-attente { color: #ffc107; font-weight: bold; }
+.status-approuve { color: #28a745; font-weight: bold; }
+.status-rejete { color: #dc3545; font-weight: bold; }
+.status-delivre { color: #17a2b8; font-weight: bold; }
+
+/* Tableaux plus lisibles */
+.table th {
+    background-color: #f8f9fa;
+    border-top: 2px solid #ff7b00;
+}
+
+/* Boutons personnalisés */
+.btn-custom-orange {
+    background-color: #ff7b00;
+    border-color: #ff7b00;
+    color: white;
+}
+
+.btn-custom-green {
+    background-color: #00a550;
+    border-color: #00a550;
+    color: white;
+}
+
+/* Dashboard personnalisé */
+.dashboard-card {
+    border-left: 4px solid #ff7b00;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dashboard-stat {
+    font-size: 2em;
+    font-weight: bold;
+    color: #ff7b00;
+}

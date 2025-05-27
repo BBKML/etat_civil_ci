@@ -1,0 +1,192 @@
+Documentation du Projet de Gestion de l'État Civil
+1. Aperçu du Projet
+Ce projet est un système de gestion intégré de l'état civil pour les communes et sous-préfectures. Il permet :
+
+La gestion des actes de naissance, mariage et décès
+
+Le suivi des demandes d'actes par les citoyens
+
+La gestion des paiements associés
+
+La production de statistiques
+
+L'audit des actions
+
+2. Architecture Technique
+2.1 Modèles Principaux
+2.1.1 Structure Territoriale
+Region : Division administrative de premier niveau
+
+Departement : Division administrative de second niveau
+
+SousPrefecture : Division administrative de troisième niveau
+
+Commune : Division administrative de base
+
+2.1.2 Utilisateurs
+User : Modèle personnalisé étendant AbstractUser avec des rôles spécifiques (citoyen, agent, maire, etc.)
+
+2.1.3 Personnes et Actes
+Personne : Fiche individuelle avec toutes les informations personnelles
+
+ActeNaissance : Enregistrement des naissances
+
+Mariage : Enregistrement des mariages
+
+ActeDeces : Enregistrement des décès
+
+2.1.4 Demandes et Paiements
+DemandeActe : Demandes formulées par les citoyens
+
+Paiement : Transactions financières associées aux demandes
+
+Tarif : Grille tarifaire des actes
+
+2.1.5 Autres Modèles
+Statistique : Données statistiques mensuelles
+
+LogAudit : Journal des actions importantes
+
+DocumentNumerique : Documents scannés/signés
+
+2.2 Rôles et Permissions
+Le système définit plusieurs rôles avec des permissions spécifiques :
+
+Citoyen :
+
+Peut créer/modifier son profil
+
+Peut soumettre des demandes d'actes
+
+Peut effectuer des paiements
+
+Accès limité à ses propres données
+
+Agent de Commune :
+
+Gère les actes pour sa commune
+
+Traite les demandes
+
+Accès aux statistiques locales
+
+Maire :
+
+Mêmes permissions que l'agent de commune
+
+Accès étendu aux données de la commune
+
+Agent de Sous-Préfecture :
+
+Supervision des communes de la sous-préfecture
+
+Accès aux statistiques étendues
+
+Sous-Préfet :
+
+Mêmes permissions que l'agent de sous-préfecture
+
+Accès administratif étendu
+
+Administrateur :
+
+Accès complet au système
+
+Gestion des structures territoriales
+
+Configuration des tarifs
+
+3. Fonctionnalités Clés
+3.1 Gestion des Actes
+Enregistrement des naissances, mariages et décès
+
+Génération de numéros d'actes uniques
+
+Association avec les personnes concernées
+
+Historique complet des modifications
+
+3.2 Workflow des Demandes
+Soumission par le citoyen
+
+Validation préliminaire
+
+Paiement (si requis)
+
+Traitement par l'administration
+
+Délivrance ou rejet
+
+3.3 Gestion Financière
+Calcul automatique des montants
+
+Prise en charge de plusieurs méthodes de paiement
+
+Gestion des remboursements
+
+Intégration avec les systèmes de mobile money
+
+3.4 Tableaux de Bord
+Statistiques en temps réel
+
+Visualisation par période/territoire
+
+Indicateurs clés pour chaque rôle
+
+4. Sécurité et Contrôle d'Accès
+Filtrage des données par rôle/commune
+
+Journalisation complète des actions
+
+Validation rigoureuse des données
+
+Protection contre les modifications non autorisées
+
+5. API Admin Personnalisée
+L'interface d'administration est fortement personnalisée avec :
+
+Filtres spécifiques par commune
+
+Vues adaptées à chaque rôle
+
+Tableaux de bord contextuels
+
+Workflows guidés
+
+6. Dépendances Techniques
+Django 3.2+
+
+PostgreSQL (recommandé)
+
+Pillow pour la gestion des images
+
+Bibliothèques de paiement (à intégrer)
+
+7. Installation et Déploiement
+Cloner le dépôt
+
+Créer un environnement virtuel
+
+Installer les dépendances (pip install -r requirements.txt)
+
+Configurer la base de données
+
+Lancer les migrations
+
+Créer un superutilisateur
+
+Lancer le serveur
+
+8. Points d'Amélioration Futurs
+Intégration avec l'API nationale d'identification
+
+Interface mobile dédiée
+
+Notifications en temps réel
+
+Intégration avec les services de livraison
+
+Analyse prédictive des tendances démographiques
+
+9. Licence
+Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.

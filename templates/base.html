@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Système de Gestion Intégré de l'État Civil - Côte d'Ivoire{% endblock %}</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --ivoire-orange: #F77F00;
+            --ivoire-green: #009E49;
+            --ivoire-white: #FFFFFF;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .text-ivoire-orange {
+            color: var(--ivoire-orange) !important;
+        }
+        
+        .bg-ivoire-orange {
+            background-color: var(--ivoire-orange) !important;
+        }
+        
+        .text-ivoire-green {
+            color: var(--ivoire-green) !important;
+        }
+        
+        .bg-ivoire-green {
+            background-color: var(--ivoire-green) !important;
+        }
+        
+        .btn-outline-ivoire-orange {
+            border-color: var(--ivoire-orange);
+            color: var(--ivoire-orange);
+        }
+        
+        .btn-outline-ivoire-orange:hover {
+            background-color: var(--ivoire-orange);
+            color: white;
+        }
+        
+        .timeline-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            font-size: 2rem;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, var(--ivoire-orange) 0%, var(--ivoire-green) 100%);
+            color: white;
+            padding: 80px 0;
+        }
+        
+        .admin-access {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            transition: transform 0.3s ease;
+        }
+        
+        .flag-colors {
+            background: linear-gradient(to right, var(--ivoire-orange) 33%, white 33%, white 66%, var(--ivoire-green) 66%);
+            height: 5px;
+        }
+        
+        .navbar-brand img {
+            height: 40px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% block flag_colors %}
+    <!-- Bande aux couleurs du drapeau -->
+    <div class="flag-colors"></div>
+    {% endblock %}
+
+    {% block admin_access %}
+    <!-- Accès Utilisateurs -->
+    <div class="admin-access">
+        <div class="dropdown">
+            <button class="btn btn-outline-dark btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                <i class="fas fa-user-cog"></i> CONNEXION
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                {% if user.is_authenticated %}
+                    <li><span class="dropdown-item-text">Connecté en tant que {{ user.get_full_name|default:user.username }}</span></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fas fa-tachometer-alt"></i> Tableau de bord</a></li>
+                    <li><a class="dropdown-item" href="{% url 'admin:logout' %}"><i class="fas fa-sign-out-alt"></i> Déconnexion</a></li>
+                {% else %}
+                    <li><a class="dropdown-item" href="{% url 'admin:login' %}"><i class="fas fa-sign-in-alt"></i> Connexion</a></li>
+                    <li><a class="dropdown-item" href="{% url 'core:register' %}"><i class="fas fa-user-plus"></i> Inscription</a></li>
+  
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+    {% endblock %}
+
+    {% block navbar %}
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'home' %}">
+                <i class="fas fa-landmark text-ivoire-orange me-2"></i>
+                État Civil CI
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#services">Services</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#process">Comment ça marche</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#tarifs">Tarifs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#contact">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    {% endblock %}
+
+    {% block hero_section %}
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">
+                        Système de Gestion Intégré de l'État Civil
+                    </h1>
+                    <p class="lead mb-4">
+                        Demandez vos actes d'état civil en ligne simplement, rapidement et en toute sécurité. 
+                        Service officiel de la République de Côte d'Ivoire.
+                    </p>
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                        <a href="/admin/" class="btn btn-light btn-lg px-4 me-md-2">
+                            <i class="fas fa-play me-2"></i>Commencer
+                        </a>
+                        <a href="#services" class="btn btn-outline-light btn-lg px-4">
+                            En savoir plus
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-6 text-center">
+                    <div class="mt-5 mt-lg-0">
+                        <i class="fas fa-certificate" style="font-size: 12rem; opacity: 0.3;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block services_section %}
+    <!-- Services Section -->
+    <section id="services" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Nos Services d'État Civil</h2>
+            <div class="row row-cols-1 row-cols-md-3 g-4">
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-baby fs-1 text-ivoire-orange"></i>
+                            </div>
+                            <h3 class="card-title">Acte de Naissance</h3>
+                            <p class="card-text">
+                                Obtenez un extrait ou une copie intégrale de votre acte de naissance.
+                                Document essentiel pour toutes vos démarches administratives.
+                            </p>
+                            <a href="/admin/" class="btn btn-outline-ivoire-orange">Demander</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-ring fs-1 text-ivoire-orange"></i>
+                            </div>
+                            <h3 class="card-title">Acte de Mariage</h3>
+                            <p class="card-text">
+                                Obtenez un extrait ou une copie intégrale de votre acte de mariage.
+                                Indispensable pour vos démarches familiales et juridiques.
+                            </p>
+                            <a href="/admin/" class="btn btn-outline-ivoire-orange">Demander</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="fas fa-book fs-1 text-ivoire-orange"></i>
+                            </div>
+                            <h3 class="card-title">Acte de Décès</h3>
+                            <p class="card-text">
+                                Obtenez un extrait ou une copie intégrale d'un acte de décès.
+                                Nécessaire pour les démarches de succession et d'héritage.
+                            </p>
+                            <a href="/admin/" class="btn btn-outline-ivoire-orange">Demander</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block process_section %}
+    <!-- Process Section -->
+    <section id="process" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Comment ça marche ?</h2>
+            <div class="row">
+                <div class="col-md-3 text-center mb-4">
+                    <div class="timeline-icon bg-ivoire-orange">
+                        <i class="fas fa-user-plus text-white"></i>
+                    </div>
+                    <h4 class="mt-3">1. Inscription</h4>
+                    <p>Créez votre compte citoyen sur la plateforme</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="timeline-icon bg-ivoire-orange">
+                        <i class="fas fa-file-alt text-white"></i>
+                    </div>
+                    <h4 class="mt-3">2. Demande</h4>
+                    <p>Remplissez le formulaire de demande en ligne</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="timeline-icon bg-ivoire-orange">
+                        <i class="fas fa-credit-card text-white"></i>
+                    </div>
+                    <h4 class="mt-3">3. Paiement</h4>
+                    <p>Effectuez le paiement selon les tarifs officiels</p>
+                </div>
+                <div class="col-md-3 text-center mb-4">
+                    <div class="timeline-icon bg-ivoire-orange">
+                        <i class="fas fa-file-pdf text-white"></i>
+                    </div>
+                    <h4 class="mt-3">4. Réception</h4>
+                    <p>Récupérez votre acte certifié</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block tarifs_section %}
+    <!-- Tarifs Section -->
+    <section id="tarifs" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Tarifs Officiels</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead class="bg-ivoire-orange text-white">
+                                <tr>
+                                    <th>Type d'Acte</th>
+                                    <th>Extrait</th>
+                                    <th>Copie Intégrale</th>
+                                    <th>Timbre Fiscal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Acte de Naissance</td>
+                                    <td>1 000 FCFA</td>
+                                    <td>1 500 FCFA</td>
+                                    <td>500 FCFA</td>
+                                </tr>
+                                <tr>
+                                    <td>Acte de Mariage</td>
+                                    <td>1 000 FCFA</td>
+                                    <td>1 500 FCFA</td>
+                                    <td>500 FCFA</td>
+                                </tr>
+                                <tr>
+                                    <td>Acte de Décès</td>
+                                    <td>1 000 FCFA</td>
+                                    <td>1 500 FCFA</td>
+                                    <td>500 FCFA</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block stats_section %}
+    <!-- Stats Section -->
+    <section class="py-5 bg-ivoire-green text-white">
+        <div class="container">
+            <div class="row text-center">
+                <div class="col-md-3 mb-4">
+                    <h3 class="display-4 fw-bold">1000+</h3>
+                    <p class="lead">Communes connectées</p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h3 class="display-4 fw-bold">50K+</h3>
+                    <p class="lead">Actes délivrés</p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h3 class="display-4 fw-bold">98%</h3>
+                    <p class="lead">Taux de satisfaction</p>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h3 class="display-4 fw-bold">24h</h3>
+                    <p class="lead">Délai moyen</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block roles_section %}
+    <!-- Roles Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5">Accès selon votre rôle</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-users fs-1 text-ivoire-orange mb-3"></i>
+                            <h4>Citoyens</h4>
+                            <p>Demandez vos actes d'état civil en ligne</p>
+                            <a href="/register/" class="btn bg-ivoire-orange text-white">S'inscrire</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-user-tie fs-1 text-ivoire-green mb-3"></i>
+                            <h4>Agents / Maires</h4>
+                            <p>Gérez les demandes de votre commune</p>
+                            <a href="/admin/" class="btn bg-ivoire-green text-white">Se connecter</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <i class="fas fa-cog fs-1 text-secondary mb-3"></i>
+                            <h4>Administrateurs</h4>
+                            <p>Administration générale du système</p>
+                            <a href="/admin/" class="btn btn-secondary">Administration</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block contact_section %}
+    <!-- Contact Section -->
+    <section id="contact" class="py-5 bg-light">
+        <div class="container">
+            <h2 class="text-center mb-5">Contactez-nous</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Informations de contact</h5>
+                            <p><i class="fas fa-map-marker-alt text-ivoire-orange me-2"></i> Plateau, Abidjan - Côte d'Ivoire</p>
+                            <p><i class="fas fa-phone text-ivoire-orange me-2"></i> +225 20 XX XX XX</p>
+                            <p><i class="fas fa-envelope text-ivoire-orange me-2"></i> contact@etatcivil.ci</p>
+                            <p><i class="fas fa-clock text-ivoire-orange me-2"></i> Lun-Ven: 8h-17h</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h5 class="card-title">Aide et Support</h5>
+                            <p>Besoin d'aide ? Consultez notre guide d'utilisation ou contactez notre support technique.</p>
+                            <a href="#" class="btn btn-outline-ivoire-orange me-2">Guide d'utilisation</a>
+                            <a href="#" class="btn btn-outline-ivoire-green">Support technique</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% endblock %}
+
+    {% block content %}{% endblock %}
+
+    {% block footer %}
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Système d'État Civil - Côte d'Ivoire</h5>
+                    <p>Service officiel de l'état civil de la République de Côte d'Ivoire</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2024 République de Côte d'Ivoire. Tous droits réservés.</p>
+                    <div class="flag-colors mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    {% block extra_js %}
+    <script>
+        // Animation au scroll
+        window.addEventListener('scroll', function() {
+            const cards = document.querySelectorAll('.card');
+            cards.forEach(card => {
+                const rect = card.getBoundingClientRect();
+                if (rect.top < window.innerHeight - 100) {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }
+            });
+        });
+
+        // Smooth scrolling
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+    {% endblock %}
+</body>
+</html>

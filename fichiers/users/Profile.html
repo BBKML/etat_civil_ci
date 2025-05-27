@@ -1,0 +1,337 @@
+{% extends "core/base.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+    .profile-container {
+        max-width: 1200px;
+        margin: 2rem auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .profile-header {
+        text-align: center;
+    }
+
+    .profile-header h1 {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-header p {
+        color: #666;
+        font-size: 1.1rem;
+    }
+
+    .profile-content {
+        display: grid;
+        grid-template-columns: 1fr 2.5fr;
+        gap: 2rem;
+    }
+
+    .profile-sidebar {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        max-width: 150px;
+        height: auto;
+        border-radius: 50%;
+        display: block;
+        margin: 0 auto 1rem;
+    }
+
+    .btn-upload {
+        display: block;
+        width: 100%;
+        text-align: center;
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.5rem;
+        border-radius: 5px;
+        margin-top: 0.5rem;
+    }
+
+    .profile-info h3 {
+        text-align: center;
+        margin: 0.5rem 0;
+    }
+
+    .profile-info p {
+        font-size: 0.95rem;
+        color: #555;
+        text-align: center;
+    }
+
+    .profile-menu ul {
+        list-style: none;
+        padding: 0;
+        margin-top: 2rem;
+    }
+
+    .profile-menu li {
+        margin: 0.5rem 0;
+    }
+
+    .profile-menu a {
+        display: block;
+        padding: 0.75rem 1rem;
+        background: #ffffff;
+        border-radius: 5px;
+        color: #333;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .profile-menu .active a,
+    .profile-menu a:hover {
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+    .profile-main {
+        background-color: #ffffff;
+        padding: 2rem;
+        border-radius: 8px;
+    }
+
+    .profile-section {
+        display: none;
+    }
+
+    .profile-section.active {
+        display: block;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        width: 100%;
+    }
+
+    .form-group label {
+        display: block;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 0.75rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .btn-save,
+    .btn-view,
+    .btn-more {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 5px;
+        font-weight: 500;
+        margin-top: 1rem;
+    }
+
+    .btn-save:hover,
+    .btn-view:hover,
+    .btn-more:hover {
+        background-color: #00796b;
+    }
+
+    .request-item {
+        border: 1px solid #ddd;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-radius: 5px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .request-status.completed { color: green; font-weight: bold; }
+    .request-status.processing { color: orange; font-weight: bold; }
+    .request-status.rejected { color: red; font-weight: bold; }
+</style>
+
+<div class="container profile-container">
+    <div class="profile-header">
+        <h1>Mon Profil</h1>
+        <p>Gérez vos informations personnelles et vos préférences</p>
+    </div>
+
+    <div class="profile-content">
+        <div class="profile-sidebar">
+            <div class="profile-card">
+                <div class="profile-avatar">
+                    <img src="{{ profile.profile_picture.url|default:'https://via.placeholder.com/150' }}" alt="Photo de profil">
+                    <form method="post" enctype="multipart/form-data" action="{% url 'users:update_profile_picture' %}">
+                        {% csrf_token %}
+                        <input type="file" name="profile_picture" class="form-control mt-2" required>
+                        <button type="submit" class="btn btn-upload mt-2">Changer la photo</button>
+                    </form>
+                </div>
+
+                <div class="profile-info">
+                    <h3>{{ user.get_full_name }}</h3>
+                    <p><i class="fas fa-envelope"></i> {{ user.email }}</p>
+                    <p><i class="fas fa-phone"></i> {{ profile.telephone }}</p>
+                    <p><i class="fas fa-map-marker-alt"></i> {{ profile.adresse }}</p>
+                </div>
+            </div>
+
+            <nav class="profile-menu">
+                <ul>
+                    <li class="active"><a href="#personal-info"><i class="fas fa-user"></i> Informations personnelles</a></li>
+                    <li><a href="#security"><i class="fas fa-lock"></i> Sécurité</a></li>
+                    <li><a href="#requests"><i class="fas fa-file-alt"></i> Mes demandes</a></li>
+                    <li><a href="#settings"><i class="fas fa-cog"></i> Paramètres</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <div class="profile-main">
+            <section id="personal-info" class="profile-section active">
+                <h2>Informations personnelles</h2>
+                <form method="post" action="{% url 'users:update_profile' %}">
+                    {% csrf_token %}
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="lastName">Nom</label>
+                            <input type="text" name="last_name" id="lastName" class="form-control" value="{{ user.last_name }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="firstName">Prénoms</label>
+                            <input type="text" name="first_name" id="firstName" class="form-control" value="{{ user.first_name }}">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthDate">Date de naissance</label>
+                        <input type="date" name="date_of_birth" id="birthDate" class="form-control" value="{{ profile.date_naissance|date:'Y-m-d' }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="birthPlace">Lieu de naissance</label>
+                        <input type="text" name="birth_place" id="birthPlace" class="form-control" value="{{ profile.lieu_naissance }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Adresse</label>
+                        <input type="text" name="address" id="address" class="form-control" value="{{ profile.adresse }}">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="phone">Téléphone</label>
+                            <input type="tel" name="phone" id="phone" class="form-control" value="{{ profile.telephone }}">
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" name="email" id="email" class="form-control" value="{{ user.email }}">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-save">Enregistrer les modifications</button>
+                </form>
+            </section>
+
+            <section id="security" class="profile-section">
+                <h2>Sécurité du compte</h2>
+                <form method="post" action="{% url 'users:change_password' %}">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="currentPassword">Mot de passe actuel</label>
+                        <input type="password" name="old_password" id="currentPassword" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newPassword">Nouveau mot de passe</label>
+                        <input type="password" name="new_password1" id="newPassword" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirmer le nouveau mot de passe</label>
+                        <input type="password" name="new_password2" id="confirmPassword" class="form-control">
+                    </div>
+
+                    <button type="submit" class="btn btn-save">Changer le mot de passe</button>
+                </form>
+            </section>
+
+            <section id="requests" class="profile-section">
+                <h2>Mes demandes récentes</h2>
+                <div class="profile-requests">
+                    {% for demande in ongoing_requests %}
+                    <div class="request-item">
+                        <div class="request-info">
+                            <h3>{{ demande.type_document }}</h3>
+                            <p>Demande #{{ demande.numero_reference }}</p>
+                            <p class="request-date">{{ demande.date_demande|date:"d/m/Y" }}</p>
+                        </div>
+                        <div class="request-status {{ demande.statut }}">
+                            {{ demande.get_statut_display }}
+                        </div>
+                        <a href="{% url 'core:demande_detail' demande.id %}" class="btn btn-view">Voir</a>
+                    </div>
+                    {% empty %}
+                    <p>Aucune demande en cours.</p>
+                    {% endfor %}
+                </div>
+                <a href="{% url 'core:mes_demandes' %}" class="btn btn-more">Voir toutes mes demandes</a>
+            </section>
+
+            <section id="settings" class="profile-section">
+                <h2>Paramètres</h2>
+                <form method="post" action="{% url 'users:toggle_2fa' %}">
+                    {% csrf_token %}
+                    <div class="form-group checkbox-group">
+                        <input type="checkbox" id="2fa" name="two_factor_enabled" {% if user.two_factor_enabled %}checked{% endif %}>
+                        <label for="2fa">Activer l’authentification à deux facteurs</label>
+                    </div>
+                    <button type="submit" class="btn btn-save">Mettre à jour</button>
+                </form>
+            </section>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const links = document.querySelectorAll('.profile-menu a');
+        const sections = document.querySelectorAll('.profile-section');
+
+        links.forEach(link => {
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href').replace('#', '');
+
+                // Retirer active des liens
+                links.forEach(l => l.parentElement.classList.remove('active'));
+                this.parentElement.classList.add('active');
+
+                // Afficher la section cible
+                sections.forEach(section => {
+                    section.classList.remove('active');
+                    if (section.id === targetId) {
+                        section.classList.add('active');
+                    }
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,22 @@
+:root {
+    --primary: #2c5530;
+    --secondary: #ff8c00;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.sidebar {
+    background: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    min-height: calc(100vh - 56px);
+}
+
+.navbar {
+    background-color: var(--primary) !important;
+}
+
+.footer {
+    background-color: var(--primary);
+}

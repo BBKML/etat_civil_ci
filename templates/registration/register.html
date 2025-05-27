@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Inscription - État Civil CI{% endblock %}
+
+{% block flag_colors %}{% endblock %}
+{% block admin_access %}{% endblock %}
+{% block hero_section %}{% endblock %}
+{% block services_section %}{% endblock %}
+{% block process_section %}{% endblock %}
+{% block tarifs_section %}{% endblock %}
+{% block stats_section %}{% endblock %}
+{% block roles_section %}{% endblock %}
+{% block contact_section %}{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-ivoire-green text-white">
+                    <h4 class="mb-0">Inscription Citoyen</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">Nom d'utilisateur</label>
+                            <input type="text" name="username" class="form-control" id="id_username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" id="id_email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label">Mot de passe</label>
+                            <input type="password" name="password1" class="form-control" id="id_password1" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password2" class="form-label">Confirmation du mot de passe</label>
+                            <input type="password" name="password2" class="form-control" id="id_password2" required>
+                        </div>
+                        <button type="submit" class="btn bg-ivoire-green text-white w-100">S'inscrire</button>
+                    </form>
+                    <hr>
+                    <div class="text-center">
+                        <p>Déjà un compte ? <a href="{% url 'admin:login' %}" class="text-ivoire-orange">Se connecter</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
