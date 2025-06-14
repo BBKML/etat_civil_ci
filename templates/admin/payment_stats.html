@@ -1,0 +1,516 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static humanize %}
+
+{% block title %}Statistiques des paiements{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        .stats-container {
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            text-align: center;
+            border-left: 4px solid #007cba;
+        }
+        
+        .stat-card.success {
+            border-left-color: #28a745;
+        }
+        
+        .stat-card.warning {
+            border-left-color: #ffc107;
+        }
+        
+        .stat-card.danger {
+            border-left-color: #dc3545;
+        }
+        
+        .stat-card.info {
+            border-left-color: #17a2b8;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .chart-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .method-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .method-card {
+            background: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+        }
+        
+        .method-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #495057;
+        }
+        
+        .method-count {
+            font-size: 1.5em;
+            color: #007cba;
+            font-weight: bold;
+        }
+        
+        .method-amount {
+            font-size: 12px;
+            color: #6c757d;
+            margin-top: 5px;
+        }
+        
+        .weekly-stats {
+            overflow-x: auto;
+        }
+        
+        .weekly-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .weekly-table th,
+        .weekly-table td {
+            padding: 10px;
+            text-align: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .weekly-table th {
+            background: #f8f9fa;
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .weekly-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .canvas-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        
+        .no-data {
+            text-align: center;
+            color: #6c757d;
+            font-style: italic;
+            padding: 40px;
+        }
+        
+        .success-rate {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .rate-bar {
+            width: 100px;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .rate-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #dc3545 0%, #ffc107 50%, #28a745 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .export-actions {
+            margin: 20px 0;
+            text-align: right;
+        }
+        
+        .btn-export {
+            background: #28a745;
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            margin-left: 10px;
+        }
+        
+        .btn-export:hover {
+            background: #218838;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="stats-container">
+    <h1>Statistiques des paiements</h1>
+    
+    <!-- Statistiques principales -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-number">{{ stats.total_paiements }}</div>
+            <div class="stat-label">Total paiements</div>
+        </div>
+        
+        <div class="stat-card success">
+            <div class="stat-number">{{ stats.paiements_confirmes }}</div>
+            <div class="stat-label">Confirmés</div>
+            {% if stats.total_paiements > 0 %}
+            <div class="success-rate">
+                <span>{{ stats.paiements_confirmes|mul:100|div:stats.total_paiements|floatformat:1 }}%</span>
+                <div class="rate-bar">
+                    <div class="rate-fill" style="width: {{ stats.paiements_confirmes|mul:100|div:stats.total_paiements }}%"></div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="stat-card info">
+            <div class="stat-number">{{ stats.montant_total|floatformat:0 }}</div>
+            <div class="stat-label">FCFA Collectés</div>
+        </div>
+        
+        <div class="stat-card warning">
+            <div class="stat-number">{{ stats.paiements_en_attente }}</div>
+            <div class="stat-label">En attente</div>
+        </div>
+        
+        <div class="stat-card danger">
+            <div class="stat-number">{{ stats.paiements_echec }}</div>
+            <div class="stat-label">Échecs</div>
+        </div>
+    </div>
+
+    <!-- Actions d'export -->
+    <div class="export-actions">
+        <a href="?export=csv" class="btn-export">📊 Exporter CSV</a>
+        <a href="?export=pdf" class="btn-export">📄 Rapport PDF</a>
+    </div>
+
+    <!-- Répartition par méthode de paiement -->
+    <div class="chart-container">
+        <h2 class="chart-title">Répartition par méthode de paiement</h2>
+        
+        {% if stats.par_methode %}
+        <div class="canvas-container">
+            <canvas id="methodChart"></canvas>
+        </div>
+        
+        <div class="method-stats">
+            {% for methode in stats.par_methode %}
+            <div class="method-card">
+                <div class="method-name">
+                    {{ methode.methode_paiement|default:"Non spécifiée" }}
+                </div>
+                <div class="method-count">{{ methode.count }}</div>
+                <div class="method-amount">
+                    {{ methode.montant|default:0|floatformat:0 }} FCFA
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-data">Aucune donnée disponible</div>
+        {% endif %}
+    </div>
+
+    <!-- Évolution sur 7 jours -->
+    <div class="chart-container">
+        <h2 class="chart-title">Évolution des 7 derniers jours</h2>
+        
+        {% if stats.cette_semaine %}
+        <div class="canvas-container">
+            <canvas id="weeklyChart"></canvas>
+        </div>
+        
+        <div class="weekly-stats">
+            <table class="weekly-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Nombre</th>
+                        <th>Montant (FCFA)</th>
+                        <th>Moyenne</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for jour in stats.cette_semaine %}
+                    <tr>
+                        <td>{{ jour.date_paiement__date|date:"d/m/Y" }}</td>
+                        <td>{{ jour.count }}</td>
+                        <td>{{ jour.montant|default:0|floatformat:0 }}</td>
+                        <td>
+                            {% if jour.count > 0 %}
+                                {{ jour.montant|default:0|div:jour.count|floatformat:0 }}
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="no-data">Aucun paiement cette semaine</div>
+        {% endif %}
+    </div>
+
+    <!-- Détails par statut -->
+    <div class="chart-container">
+        <h2 class="chart-title">Répartition par statut</h2>
+        
+        <div class="canvas-container">
+            <canvas id="statusChart"></canvas>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="{% url 'admin:myapp_paiement_changelist' %}" class="btn-export" style="background: #007cba;">
+            📋 Voir tous les paiements
+        </a>
+        <button onclick="location.reload()" class="btn-export" style="background: #6c757d;">
+            🔄 Actualiser
+        </button>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    // Configuration des couleurs
+    const colors = {
+        primary: '#007cba',
+        success: '#28a745',
+        warning: '#ffc107',
+        danger: '#dc3545',
+        info: '#17a2b8',
+        secondary: '#6c757d'
+    };
+    
+    // Graphique des méthodes de paiement
+    {% if stats.par_methode %}
+    const methodCtx = document.getElementById('methodChart').getContext('2d');
+    new Chart(methodCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [
+                {% for methode in stats.par_methode %}
+                '{{ methode.methode_paiement|default:"Non spécifiée" }}'{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                data: [
+                    {% for methode in stats.par_methode %}
+                    {{ methode.count }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                backgroundColor: [
+                    colors.primary,
+                    colors.success,
+                    colors.warning,
+                    colors.danger,
+                    colors.info,
+                    colors.secondary
+                ],
+                borderWidth: 2,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        padding: 20,
+                        usePointStyle: true
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = ((context.raw / total) * 100).toFixed(1);
+                            return context.label + ': ' + context.raw + ' (' + percentage + '%)';
+                        }
+                    }
+                }
+            }
+        }
+    });
+    {% endif %}
+    
+    // Graphique évolution hebdomadaire
+    {% if stats.cette_semaine %}
+    const weeklyCtx = document.getElementById('weeklyChart').getContext('2d');
+    new Chart(weeklyCtx, {
+        type: 'line',
+        data: {
+            labels: [
+                {% for jour in stats.cette_semaine %}
+                '{{ jour.date_paiement__date|date:"d/m" }}'{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Nombre de paiements',
+                data: [
+                    {% for jour in stats.cette_semaine %}
+                    {{ jour.count }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                borderColor: colors.primary,
+                backgroundColor: colors.primary + '20',
+                tension: 0.4,
+                fill: true
+            }, {
+                label: 'Montant (milliers FCFA)',
+                data: [
+                    {% for jour in stats.cette_semaine %}
+                    {{ jour.montant|default:0|div:1000|floatformat:0 }}{% if not forloop.last %},{% endif %}
+                    {% endfor %}
+                ],
+                borderColor: colors.success,
+                backgroundColor: colors.success + '20',
+                tension: 0.4,
+                yAxisID: 'y1'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                y: {
+                    type: 'linear',
+                    display: true,
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Nombre'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    display: true,
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Montant (k FCFA)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                    },
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    });
+    {% endif %}
+    
+    // Graphique des statuts
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    new Chart(statusCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Confirmés', 'En attente', 'Échecs'],
+            datasets: [{
+                label: 'Nombre de paiements',
+                data: [
+                    {{ stats.paiements_confirmes }},
+                    {{ stats.paiements_en_attente }},
+                    {{ stats.paiements_echec }}
+                ],
+                backgroundColor: [
+                    colors.success,
+                    colors.warning,
+                    colors.danger
+                ],
+                borderColor: [
+                    colors.success,
+                    colors.warning,
+                    colors.danger
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        stepSize: 1
+                    }
+                }
+            }
+        }
+    });
+});
+</script>
+
+{% endblock %}

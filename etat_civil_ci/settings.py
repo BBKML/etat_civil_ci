@@ -119,8 +119,11 @@ USE_TZ = True
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_DIRS = [BASE_DIR / 'static']
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
 
 # Media files
 MEDIA_URL = '/media/'
@@ -158,6 +161,8 @@ JAZZMIN_SETTINGS = {
         {"name": "Demandes", "url": "admin:core_demandeacte_changelist", "permissions": ["core.view_demandeacte"]},
         {"name": "Statistiques", "url": "admin:core_statistique_changelist", "permissions": ["core.view_statistique"]},
         {"name": "Utilisateurs", "url": "admin:core_user_changelist", "permissions": ["auth.view_user"]},
+        {"name": "Paiements","url": "cinetpay_webhook","icon": "fas fa-money-check-alt", "permissions": ["auth.view_user"]},
+
         {"app": "core"},
     ],
 
@@ -337,10 +342,20 @@ LOGGING = {
         },
     },
 }
-
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 AUTH_USER_MODEL = 'core.User'
 LOGIN_REDIRECT_URL = '/admin/'
 LOGOUT_REDIRECT_URL = '/'
-
+# Pour le développement seulement - en production, protégez ces fichiers !
+PRIVATE_KEY_PATH = os.path.join(BASE_DIR, 'keys/private_key.pem')
+PUBLIC_KEY_PATH = os.path.join(BASE_DIR, 'keys/public_key.pem')
 # Créer le dossier logs s'il n'existe pas
 os.makedirs(BASE_DIR / 'logs', exist_ok=True)
+# Configuration pour personnaliser l'admin
+ADMIN_SITE_HEADER = "Administration"
+from decouple import config
+
+CINETPAY_API_KEY = config("CINETPAY_API_KEY")
+CINETPAY_SITE_ID = config("CINETPAY_SITE_ID")
+BASE_URL = 'http://127.0.0.1:8000/'

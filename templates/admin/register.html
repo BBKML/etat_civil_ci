@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Inscription - État Civil CI{% endblock %}
-{% block navbar %}{% endblock %}
+
 {% block flag_colors %}{% endblock %}
 {% block admin_access %}{% endblock %}
 {% block hero_section %}{% endblock %}
@@ -30,6 +30,15 @@
                             <label for="id_email" class="form-label">Email</label>
                             <input type="email" name="email" class="form-control" id="id_email" required>
                         </div>
+                        
+                        <div class="mb-3">
+                         <label for="id_commune" class="form-label">Commune</label>
+                        <select name="commune" class="form-select select2" id="id_commune" required>
+                            {% for commune in form.commune.field.queryset %}
+                                <option value="{{ commune.id }}">{{ commune.nom }}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
                         <div class="mb-3">
                             <label for="id_password1" class="form-label">Mot de passe</label>
                             <input type="password" name="password1" class="form-control" id="id_password1" required>
@@ -42,11 +51,22 @@
                     </form>
                     <hr>
                     <div class="text-center">
-                        <p>Déjà un compte ? <a href="{% url 'admin:login' %}" class="text-ivoire-orange">Se connecter</a></p>
+                        <p>Déjà un compte ? <a href="{% url 'login' %}" class="text-ivoire-orange">Se connecter</a></p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#id_commune').select2({
+            placeholder: 'Sélectionnez une commune',
+            allowClear: true,
+            width: '100%'
+        });
+    });
+</script>
 {% endblock %}

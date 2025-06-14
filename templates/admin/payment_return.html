@@ -1,0 +1,414 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block title %}Retour de paiement{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <style>
+        .payment-return {
+            max-width: 600px;
+            margin: 40px auto;
+            text-align: center;
+        }
+        
+        .payment-result {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 40px 30px;
+            margin-bottom: 20px;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #28a745;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+        
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: #dc3545;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+        
+        .warning-icon {
+            width: 80px;
+            height: 80px;
+            background: #ffc107;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+        
+        .info-icon {
+            width: 80px;
+            height: 80px;
+            background: #17a2b8;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+        
+        .result-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .result-message {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        
+        .payment-details {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            text-align: left;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            color: #495057;
+        }
+        
+        .detail-value {
+            color: #212529;
+        }
+        
+        .payment-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-weight: bold;
+            text-transform: uppercase;
+            font-size: 12px;
+        }
+        
+        .status-confirme { background: #d4edda; color: #155724; }
+        .status-en-cours { background: #d1ecf1; color: #0c5460; }
+        .status-echec { background: #f8d7da; color: #721c24; }
+        .status-annule { background: #e2e3e5; color: #383d41; }
+        .status-expire { background: #f8d7da; color: #721c24; }
+        
+        .btn-action {
+            display: inline-block;
+            padding: 12px 24px;
+            margin: 0 10px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #007cba;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #005a87;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #545b62;
+            color: white;
+        }
+        
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007cba;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .auto-refresh {
+            background: #e9ecef;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 14px;
+            color: #495057;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-return">
+    
+    {% if paiement %}
+        {% if paiement.statut == 'CONFIRME' %}
+            <!-- Paiement confirmé -->
+            <div class="payment-result">
+                <div class="success-icon">✓</div>
+                <h1 class="result-title" style="color: #28a745;">Paiement confirmé !</h1>
+                <p class="result-message">
+                    Votre paiement a été traité avec succès. 
+                    Vous recevrez un reçu par email sous peu.
+                </p>
+                
+                <div class="payment-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Référence :</span>
+                        <span class="detail-value">{{ paiement.reference_transaction }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Montant :</span>
+                        <span class="detail-value">{{ paiement.montant_total|floatformat:0 }} FCFA</span>
+                    </div>
+                    {% if paiement.methode_paiement %}
+                    <div class="detail-row">
+                        <span class="detail-label">Méthode :</span>
+                        <span class="detail-value">{{ paiement.get_methode_paiement_display }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="detail-row">
+                        <span class="detail-label">Statut :</span>
+                        <span class="payment-status status-{{ paiement.statut|lower }}">
+                            {{ paiement.get_statut_display }}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Date :</span>
+                        <span class="detail-value">{{ paiement.date_paiement|date:"d/m/Y à H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+            
+        {% elif paiement.statut == 'ECHEC' %}
+            <!-- Paiement échoué -->
+            <div class="payment-result">
+                <div class="error-icon">✗</div>
+                <h1 class="result-title" style="color: #dc3545;">Paiement échoué</h1>
+                <p class="result-message">
+                    Une erreur est survenue lors du traitement de votre paiement.
+                    {% if paiement.message_erreur %}
+                    <br><strong>Détail :</strong> {{ paiement.message_erreur }}
+                    {% endif %}
+                </p>
+                
+                <div class="payment-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Référence :</span>
+                        <span class="detail-value">{{ paiement.reference_transaction }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Montant :</span>
+                        <span class="detail-value">{{ paiement.montant_total|floatformat:0 }} FCFA</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Statut :</span>
+                        <span class="payment-status status-{{ paiement.statut|lower }}">
+                            {{ paiement.get_statut_display }}
+                        </span>
+                    </div>
+                    {% if paiement.code_erreur %}
+                    <div class="detail-row">
+                        <span class="detail-label">Code erreur :</span>
+                        <span class="detail-value">{{ paiement.code_erreur }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+        {% elif paiement.statut == 'EN_COURS' %}
+            <!-- Paiement en cours -->
+            <div class="payment-result">
+                <div class="info-icon">
+                    <div class="loading"></div>
+                </div>
+                <h1 class="result-title" style="color: #17a2b8;">Paiement en cours...</h1>
+                <p class="result-message">
+                    Votre paiement est en cours de traitement. 
+                    Cette page se rafraîchira automatiquement.
+                </p>
+                
+                <div class="payment-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Référence :</span>
+                        <span class="detail-value">{{ paiement.reference_transaction }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Montant :</span>
+                        <span class="detail-value">{{ paiement.montant_total|floatformat:0 }} FCFA</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Statut :</span>
+                        <span class="payment-status status-{{ paiement.statut|lower }}">
+                            {{ paiement.get_statut_display }}
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="auto-refresh">
+                    🔄 Vérification automatique toutes les 10 secondes...
+                </div>
+            </div>
+            
+        {% elif paiement.statut == 'ANNULE' %}
+            <!-- Paiement annulé -->
+            <div class="payment-result">
+                <div class="warning-icon">!</div>
+                <h1 class="result-title" style="color: #ffc107;">Paiement annulé</h1>
+                <p class="result-message">
+                    Le paiement a été annulé. Aucune somme n'a été prélevée.
+                </p>
+                
+                <div class="payment-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Référence :</span>
+                        <span class="detail-value">{{ paiement.reference_transaction }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Statut :</span>
+                        <span class="payment-status status-{{ paiement.statut|lower }}">
+                            {{ paiement.get_statut_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+        {% else %}
+            <!-- Statut inconnu -->
+            <div class="payment-result">
+                <div class="warning-icon">?</div>
+                <h1 class="result-title" style="color: #6c757d;">Statut inconnu</h1>
+                <p class="result-message">
+                    Le statut de votre paiement n'a pas pu être déterminé.
+                </p>
+            </div>
+        {% endif %}
+        
+    {% else %}
+        <!-- Aucun paiement trouvé -->
+        <div class="payment-result">
+            <div class="error-icon">?</div>
+            <h1 class="result-title" style="color: #dc3545;">Transaction non trouvée</h1>
+            <p class="result-message">
+                Aucune transaction n'a été trouvée avec cette référence.
+            </p>
+        </div>
+    {% endif %}
+    
+    <!-- Informations de vérification -->
+    {% if verification_result %}
+    <div class="payment-details" style="text-align: left;">
+        <h3>Informations de vérification</h3>
+        {% if verification_result.success %}
+            <div class="detail-row">
+                <span class="detail-label">Vérification :</span>
+                <span class="detail-value" style="color: #28a745;">✓ Succès</span>
+            </div>
+            {% if verification_result.payment_method %}
+            <div class="detail-row">
+                <span class="detail-label">Méthode API :</span>
+                <span class="detail-value">{{ verification_result.payment_method }}</span>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="detail-row">
+                <span class="detail-label">Vérification :</span>
+                <span class="detail-value" style="color: #dc3545;">✗ Échec</span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Erreur :</span>
+                <span class="detail-value">{{ verification_result.error }}</span>
+            </div>
+        {% endif %}
+    </div>
+    {% endif %}
+    
+    <!-- Actions -->
+    <div style="margin-top: 30px;">
+        {% if paiement.statut == 'ECHEC' or paiement.statut == 'ANNULE' %}
+            <a href="{% url 'admin:payment_interface' paiement.pk %}" class="btn-action btn-primary">
+                Réessayer le paiement
+            </a>
+        {% endif %}
+        
+        <a href="{% url 'admin:myapp_paiement_changelist' %}" class="btn-action btn-secondary">
+            Retour à l'administration
+        </a>
+        
+        {% if paiement %}
+        <a href="{% url 'admin:myapp_paiement_change' paiement.pk %}" class="btn-action btn-secondary">
+            Voir les détails
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% if paiement.statut == 'EN_COURS' %}
+<script>
+// Actualisation automatique pour les paiements en cours
+setTimeout(function() {
+    location.reload();
+}, 10000); // 10 secondes
+
+// Vérification AJAX plus fréquente
+setInterval(function() {
+    fetch('{% url "admin:payment_status" paiement.pk %}')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.status !== 'EN_COURS') {
+                location.reload();
+            }
+        })
+        .catch(error => console.log('Erreur vérification:', error));
+}, 5000); // 5 secondes
+</script>
+{% endif %}
+
+{% endblock %}

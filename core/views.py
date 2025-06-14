@@ -24,7 +24,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.http import HttpResponse, FileResponse
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
-from .models import DemandeActe, Paiement, DocumentNumerique
+from .models import DemandeActe, Paiement, DocumentNumerique, ActeNaissance
 import os
 from datetime import datetime
 
@@ -230,20 +230,169 @@ class CustomLoginView(LoginView):
 
     def get_success_url(self):
         return reverse_lazy('admin:index') 
+
 def register_view(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
             user = form.save(commit=False)
             user.role = 'CITOYEN'
-            user.is_active = False  # ← désactiver le compte
-            user.statut = 'EAQUIPE'  # ← statut personnalisé
+            user.statut = 'EAQUIPE'
+            user.is_staff = True
+
+            # Activer automatiquement tous les utilisateurs EAQUIPE
+            if user.statut == 'EAQUIPE':
+                user.is_active = True
+
+            # Si tu veux aussi créer un superutilisateur via l'inscription :
+            if user.username == 'admin':  # ← Tu peux changer ce critère
+                user.is_superuser = True
+                user.is_staff = True
+                user.is_active = True
+
             user.save()
-            # Ne pas connecter l'utilisateur car il est inactif
-            messages.success(request, "Inscription réussie. Un administrateur doit activer votre compte.")
-            return redirect('login')  # Redirige vers la page de login ou autre
+            messages.success(request, "Inscription réussie. Vous pouvez maintenant vous connecter.")
+            return redirect('login')
     else:
         form = CustomUserCreationForm()
-    return render(request, 'admin/register.html', {'form': form})
+    return render(request, 'registration/register.html', {'form': form})
 
 
+from django.http import FileResponse, HttpResponse
+from .models import DocumentNumerique, DemandeActe
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+
+@login_required
+def download_acte(request, demande_id):
+    demande = DemandeActe.objects.get(pk=demande_id)
+    
+    # Vérifier les permissions
+    if request.user != demande.demandeur and not request.user.is_staff:
+        raise PermissionDenied
+    
+    # Récupérer ou générer le document
+    document = demande.documents.filter(type_document='ACTE').first()
+    if not document:
+        document = DocumentNumerique.objects.create(
+            demande=demande,
+            type_document='ACTE'
+        )
+        document.generate_acte_pdf()
+    
+    response = FileResponse(document.fichier)
+    response['Content-Disposition'] = f'attachment; filename="{document.nom_fichier}"'
+    return response
+
+@login_required
+def verify_signature(request, document_id):
+    document = DocumentNumerique.objects.get(pk=document_id)
+    
+    # Vérifier les permissions
+    if request.user != document.demande.demandeur and not request.user.is_staff:
+        raise PermissionDenied
+    
+    is_valid = document.verify_signature()
+    
+    return HttpResponse(f"Signature {'valide' if is_valid else 'invalide'}")
+
+
+
+from django.http import JsonResponse
+from core.models import DemandeActe, Tarif
+
+def get_tarif_from_demande(request, demande_id):
+    try:
+        demande = DemandeActe.objects.get(pk=demande_id)
+        tarif = Tarif.objects.get(type_acte=demande.type_acte, actif=True)
+        quantite = demande.nombre_exemplaires  # ou autre champ
+        return JsonResponse({
+            'success': True,
+            'montant': float(tarif.prix_unitaire) * quantite,
+            'timbre': float(tarif.timbre_fiscal),
+            'total': float(tarif.prix_unitaire + tarif.timbre_fiscal) * quantite,
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+    
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+import json
+
+@csrf_exempt
+@require_POST
+def cinetpay_webhook(request):
+    """Webhook pour recevoir les confirmations CinetPay"""
+    try:
+        data = json.loads(request.body)
+        
+        transaction_id = data.get('cpm_trans_id')
+        status = data.get('cpm_result')
+        
+        # Trouver le paiement
+        paiement = Paiement.objects.get(reference_transaction=transaction_id)
+        
+        if status == '00':  # Succès
+            paiement.confirmer()
+        else:
+            paiement.echec(code_erreur=status, message_erreur=data.get('cpm_error_message', ''))
+        
+        return JsonResponse({'status': 'success'})
+    
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+
+
+
+@staff_member_required
+def initiate_payment_view(request, demande_id):
+    demande = get_object_or_404(DemandeActe, id=demande_id)
+
+    if demande.statut_paiement == 'PAYE':
+        messages.warning(request, "Cette demande est déjà payée.")
+        return redirect('admin:core_demandeacte_change', demande_id)
+
+    transaction_id = f"ACTE_{demande.id}_{uuid.uuid4().hex[:8]}"
+    amount = int(demande.tarif.prix) if demande.tarif else 1000
+
+    paiement = Paiement.objects.create(
+        demande_acte=demande,
+        montant=amount,
+        reference_transaction=transaction_id,
+        statut='EN_ATTENTE',
+        methode_paiement='CINETPAY'
+    )
+
+    service = CinetPayService()
+    result = service.initiate_payment(paiement)
+
+    if result.get('success'):
+        return redirect(result['payment_url'])
+    else:
+        messages.error(request, f"Erreur lors de l'initiation du paiement : {result.get('error', 'Erreur inconnue')}")
+        return redirect('admin:core_demandeacte_change', demande_id)
+
+
+@csrf_exempt
+def payment_webhook_view(request):
+    if request.method == 'POST':
+        data = request.POST
+        transaction_id = data.get('cpm_trans_id')
+        payment_status = data.get('cpm_result')
+
+        try:
+            paiement = Paiement.objects.get(reference_transaction=transaction_id)
+
+            if paiement.statut != 'VALIDE' and payment_status == '00':
+                paiement.statut = 'VALIDE'
+                paiement.save()
+
+                demande = paiement.demande_acte
+                demande.statut_paiement = 'PAYE'
+                demande.save()
+
+            return JsonResponse({'status': 'success'}, status=200)
+
+        except Paiement.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'Paiement introuvable'}, status=404)
+    return JsonResponse({'status': 'error', 'message': 'Méthode non autorisée'}, status=405)

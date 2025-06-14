@@ -1,0 +1,77 @@
+/* static/admin/css/payment_admin.css */
+
+/* Styles pour la liste des paiements */
+.payment-status-badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Amélioration des boutons d'action */
+.payment-actions {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.payment-actions .button {
+    font-size: 11px;
+    padding: 4px 8px;
+    white-space: nowrap;
+}
+
+/* Responsive pour mobile */
+@media (max-width: 768px) {
+    .payment-actions {
+        flex-direction: column;
+    }
+    
+    .payment-actions .button {
+        text-align: center;
+        margin-bottom: 2px;
+    }
+}
+
+/* Coloration des lignes selon le statut */
+.admin-changelist tbody tr.status-confirme {
+    background-color: rgba(40, 167, 69, 0.1) !important;
+}
+
+.admin-changelist tbody tr.status-echec {
+    background-color: rgba(220, 53, 69, 0.1) !important;
+}
+
+.admin-changelist tbody tr.status-en-cours {
+    background-color: rgba(23, 162, 184, 0.1) !important;
+}
+
+/* Style pour les filtres */
+.admin-list-filter {
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+/* Animation pour les boutons de vérification */
+.verify-button {
+    position: relative;
+    overflow: hidden;
+}
+
+.verify-button.loading::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { left: -100%; }
+    100% { left: 100%; }
+}

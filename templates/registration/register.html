@@ -2,6 +2,7 @@
 
 {% block title %}Inscription - État Civil CI{% endblock %}
 
+
 {% block flag_colors %}{% endblock %}
 {% block admin_access %}{% endblock %}
 {% block hero_section %}{% endblock %}
@@ -12,41 +13,156 @@
 {% block roles_section %}{% endblock %}
 {% block contact_section %}{% endblock %}
 {% block content %}
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+<!-- Style en ligne -->
+<style>
+    :root {
+        --orange: #F58220;
+        --green: #009639;
+        --white: #ffffff;
+    }
+
+    .bg-ivoire-green {
+        background-color: var(--green);
+    }
+
+    .text-ivoire-orange {
+        color: var(--orange);
+    }
+
+    .text-white {
+        color: var(--white) !important;
+    }
+
+    .me-1 {
+        margin-right: 0.25rem;
+    }
+
+    .me-2 {
+        margin-right: 0.5rem;
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    .card {
+        border-radius: 12px;
+        overflow: hidden;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    input:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 5px rgba(0, 150, 57, 0.5);
+    }
+
+    button {
+        transition: background-color 0.3s ease, transform 0.2s ease;
+        border-radius: 8px;
+    }
+
+    button:hover {
+        background-color: #007f2d;
+        transform: scale(1.02);
+    }
+
+       /* Boutons */
+    .bg-ivoire-green{
+        background: linear-gradient(to right, orange, green);
+        border: none;
+        font-weight: bold;
+        color: white;
+        transition: background 0.3s ease;
+    }
+    .bg-ivoire-green:hover {
+        background: linear-gradient(to right, darkorange, darkgreen);
+    }
+
+    .col-md-6 {
+        max-width: 400px;
+        margin: auto;
+        padding: 30px;
+        background-color: #f8f9fa; /* Couleur de fond claire */
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    @media (max-width: 576px) {
+        .card {
+            margin: 1rem;
+        }
+    }
+
+</style>
+
 <div class="container py-5">
     <div class="row justify-content-center">
-        <div class="col-md-6">
+        <div class="col-md-6 col-sm-12">
             <div class="card shadow">
-                <div class="card-header bg-ivoire-green text-white">
+                <div class="card-header bg-ivoire-green text-white d-flex align-items-center">
+                    <i class="fas fa-user-plus me-2"></i>
                     <h4 class="mb-0">Inscription Citoyen</h4>
                 </div>
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
                         <div class="mb-3">
-                            <label for="id_username" class="form-label">Nom d'utilisateur</label>
+                            <label for="id_username" class="form-label">
+                                <i class="fas fa-user me-1 text-ivoire-orange"></i> Nom d'utilisateur
+                            </label>
                             <input type="text" name="username" class="form-control" id="id_username" required>
                         </div>
                         <div class="mb-3">
-                            <label for="id_email" class="form-label">Email</label>
+                            <label for="id_email" class="form-label">
+                                <i class="fas fa-envelope me-1 text-ivoire-orange"></i> Email
+                            </label>
                             <input type="email" name="email" class="form-control" id="id_email" required>
                         </div>
                         <div class="mb-3">
-                            <label for="id_password1" class="form-label">Mot de passe</label>
+                         <label for="id_commune" class="form-label">Commune</label>
+                        <select name="commune" class="form-select select2" id="id_commune" required>
+                            {% for commune in form.commune.field.queryset %}
+                                <option value="{{ commune.id }}">{{ commune.nom }}</option>
+                            {% endfor %}
+                        </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label">
+                                <i class="fas fa-lock me-1 text-ivoire-orange"></i> Mot de passe
+                            </label>
                             <input type="password" name="password1" class="form-control" id="id_password1" required>
                         </div>
                         <div class="mb-3">
-                            <label for="id_password2" class="form-label">Confirmation du mot de passe</label>
+                            <label for="id_password2" class="form-label">
+                                <i class="fas fa-lock me-1 text-ivoire-orange"></i> Confirmation du mot de passe
+                            </label>
                             <input type="password" name="password2" class="form-control" id="id_password2" required>
                         </div>
-                        <button type="submit" class="btn bg-ivoire-green text-white w-100">S'inscrire</button>
+                        <button type="submit" class="btn bg-ivoire-green text-white w-100">
+                            <i class="fas fa-user-check me-1"></i> S'inscrire
+                        </button>
                     </form>
                     <hr>
                     <div class="text-center">
-                        <p>Déjà un compte ? <a href="{% url 'admin:login' %}" class="text-ivoire-orange">Se connecter</a></p>
+                        <p>Déjà un compte ?
+                            <a href="{% url 'login' %}" class="text-ivoire-orange">
+                                <i class="fas fa-sign-in-alt me-1"></i> Se connecter
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
 {% endblock %}

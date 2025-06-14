@@ -1,0 +1,707 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script src="https://cdn.cinetpay.com/seamless/main.js"></script>
+    <style>
+        .payment-container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 25px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .payment-header {
+            text-align: center;
+            margin-bottom: 35px;
+            padding-bottom: 25px;
+            border-bottom: 3px solid #f8f9fa;
+        }
+        
+        .payment-header h2 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .reference-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .payment-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 35px;
+        }
+        
+        .detail-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 10px;
+            border-left: 5px solid #007cba;
+            transition: transform 0.2s ease;
+        }
+        
+        .detail-card:hover {
+            transform: translateY(-2px);
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 8px;
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .detail-value {
+            font-size: 16px;
+            color: #212529;
+            font-weight: 500;
+        }
+        
+        .amount-highlight {
+            font-size: 28px;
+            font-weight: bold;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .total-card {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #e8f5e8 0%, #d4edda 100%);
+            border-left-color: #28a745;
+            text-align: center;
+        }
+        
+        .payment-methods {
+            margin-bottom: 30px;
+        }
+        
+        .payment-methods h3 {
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .method-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .method-card {
+            background: #fff;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            padding: 25px 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .method-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+            transition: left 0.5s;
+        }
+        
+        .method-card:hover::before {
+            left: 100%;
+        }
+        
+        .method-card:hover {
+            border-color: #007cba;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,124,186,0.15);
+        }
+        
+        .method-card.selected {
+            border-color: #007cba;
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f3ff 100%);
+            box-shadow: 0 4px 15px rgba(0,124,186,0.2);
+        }
+        
+        .method-icon {
+            width: 50px;
+            height: 50px;
+            margin: 0 auto 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            font-size: 24px;
+        }
+        
+        /* Icônes spécifiques avec couleurs de marque */
+        .orange-icon {
+            background: linear-gradient(135deg, #ff6600 0%, #ff8533 100%);
+            color: white;
+        }
+        
+        .mtn-icon {
+            background: linear-gradient(135deg, #ffcc00 0%, #ffd633 100%);
+            color: #333;
+        }
+        
+        .moov-icon {
+            background: linear-gradient(135deg, #0099cc 0%, #00b3e6 100%);
+            color: white;
+        }
+        
+        .wave-icon {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            color: white;
+        }
+        
+        .card-icon {
+            background: linear-gradient(135deg, #6b73ff 0%, #000dff 100%);
+            color: white;
+        }
+        
+        .method-name {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .method-description {
+            font-size: 12px;
+            color: #6c757d;
+            line-height: 1.3;
+        }
+        
+        .phone-input {
+            display: none;
+            margin-top: 25px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            border: 2px dashed #dee2e6;
+        }
+        
+        .phone-input label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .phone-input input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .phone-input input:focus {
+            outline: none;
+            border-color: #007cba;
+            box-shadow: 0 0 0 3px rgba(0,124,186,0.1);
+        }
+        
+        .payment-button {
+            background: linear-gradient(135deg, #007cba 0%, #0056b3 100%);
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 25px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .payment-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .payment-button:hover::before {
+            left: 100%;
+        }
+        
+        .payment-button:hover {
+            background: linear-gradient(135deg, #0056b3 0%, #004085 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,124,186,0.3);
+        }
+        
+        .payment-button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .payment-button:disabled::before {
+            display: none;
+        }
+        
+        .status-display {
+            text-align: center;
+            padding: 20px;
+            margin-top: 25px;
+            border-radius: 10px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .status-success {
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .status-pending {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border: 2px solid #ffeaa7;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007cba;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007cba;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .back-link:hover {
+            color: #0056b3;
+            text-decoration: none;
+        }
+        
+        .back-link::before {
+            content: '←';
+            margin-right: 8px;
+            font-size: 18px;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .payment-container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .payment-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .method-grid {
+                grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            }
+            
+            .method-card {
+                padding: 20px 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .method-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="payment-container">
+    <a href="{% url 'admin:core_paiement_change' paiement.pk %}" class="back-link">
+        Retour aux détails du paiement
+    </a>
+    
+    <div class="payment-header">
+        <h2>Interface de Paiement CinetPay</h2>
+        <div class="reference-badge">{{ paiement.reference_transaction }}</div>
+    </div>
+    
+    <div class="payment-details">
+        <div class="detail-card">
+            <div class="detail-label">Type d'acte</div>
+            <div class="detail-value">{{ paiement.demande_acte.type_acte|default:"Non spécifié" }}</div>
+            
+        </div>
+        
+        <div class="detail-card">
+            <div class="detail-label">Demandeur</div>
+            <div class="detail-value">{{ paiement.demande_acte.demandeur.get_full_name|default:"Non renseigné" }}</div>
+        </div>
+        
+        <div class="detail-card">
+            <div class="detail-label">Montant de base</div>
+            <div class="detail-value">{{ paiement.montant|floatformat:0 }} FCFA</div>
+        </div>
+        
+        <div class="detail-card">
+            <div class="detail-label">Timbres fiscaux</div>
+            <div class="detail-value">{{ paiement.montant_timbres|default:0|floatformat:0 }} FCFA</div>
+        </div>
+        
+        <div class="detail-card total-card">
+            <div class="detail-label">Montant Total à Payer</div>
+            <div class="detail-value amount-highlight">{{ paiement.montant_total|floatformat:0 }} FCFA</div>
+        </div>
+    </div>
+    
+    <div class="payment-methods">
+        <h3>Choisissez votre méthode de paiement</h3>
+        <div class="method-grid">
+            <div class="method-card" data-method="CARD">
+                <div class="method-icon card-icon">💳</div>
+                <div class="method-name">Carte Bancaire</div>
+                <div class="method-description">Visa, MasterCard<br>Paiement sécurisé</div>
+            </div>
+            
+            <div class="method-card" data-method="ORANGE_MONEY">
+                <div class="method-icon orange-icon">🍊</div>
+                <div class="method-name">Orange Money</div>
+                <div class="method-description">Côte d'Ivoire<br>Paiement mobile</div>
+            </div>
+            
+            <div class="method-card" data-method="MTN_MONEY">
+                <div class="method-icon mtn-icon">⚡</div>
+                <div class="method-name">MTN Money</div>
+                <div class="method-description">Mobile Money<br>Transfert rapide</div>
+            </div>
+            
+            <div class="method-card" data-method="MOOV_MONEY">
+                <div class="method-icon moov-icon">🚀</div>
+                <div class="method-name">Moov Money</div>
+                <div class="method-description">Paiement mobile<br>Simple et rapide</div>
+            </div>
+            
+            <div class="method-card" data-method="WAVE">
+                <div class="method-icon wave-icon">🌊</div>
+                <div class="method-name">Wave</div>
+                <div class="method-description">Paiement digital<br>Sans frais</div>
+            </div>
+        </div>
+        
+        <div class="phone-input" id="phoneInput">
+            <label for="phoneNumber">💱 Numéro de téléphone Mobile Money:</label>
+            <input type="tel" id="phoneNumber" placeholder="+225 XX XX XX XX XX" 
+                   value="{{ paiement.numero_telephone|default:'' }}"
+                   pattern="[+]?[0-9\s\-()]+">
+        </div>
+    </div>
+    
+    <button class="payment-button" id="payButton" disabled>
+        🔒 Procéder au Paiement Sécurisé
+    </button>
+    
+    <div class="loading-spinner" id="loadingSpinner"></div>
+    
+    <div class="status-display" id="statusDisplay">
+        <div id="statusMessage"></div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const methodCards = document.querySelectorAll('.method-card');
+    const phoneInput = document.getElementById('phoneInput');
+    const payButton = document.getElementById('payButton');
+    const loadingSpinner = document.getElementById('loadingSpinner');
+    const statusDisplay = document.getElementById('statusDisplay');
+    const statusMessage = document.getElementById('statusMessage');
+    
+    let selectedMethod = null;
+    
+    // Configuration CinetPay - À remplacer par vos vraies clés
+    const CINETPAY_CONFIG = {
+        apikey: '{{ cinetpay_config.api_key|default:"votre_api_key"|escapejs }}',
+        site_id: '{{ cinetpay_config.site_id|default:"votre_site_id"|escapejs }}',
+        notify_url: '{% url "admin:payment_notify" paiement.pk %}',
+        return_url: '{% url "admin:payment_success" paiement.pk %}',
+        currency: 'XOF'
+    };
+    
+    // Gestion sélection méthode de paiement
+    methodCards.forEach(card => {
+        card.addEventListener('click', function() {
+            // Désélectionner les autres
+            methodCards.forEach(c => c.classList.remove('selected'));
+            
+            // Sélectionner la méthode courante
+            this.classList.add('selected');
+            selectedMethod = this.dataset.method;
+            
+            // Afficher/masquer le champ téléphone pour mobile money
+            const mobileMoneyMethods = ['ORANGE_MONEY', 'MTN_MONEY', 'MOOV_MONEY', 'WAVE'];
+            if (mobileMoneyMethods.includes(selectedMethod)) {
+                phoneInput.style.display = 'block';
+                document.getElementById('phoneNumber').required = true;
+            } else {
+                phoneInput.style.display = 'none';
+                document.getElementById('phoneNumber').required = false;
+            }
+            
+            // Activer le bouton de paiement
+            payButton.disabled = false;
+            payButton.innerHTML = `🔒 Payer avec ${this.querySelector('.method-name').textContent}`;
+        });
+    });
+    
+    // Validation du numéro de téléphone
+    document.getElementById('phoneNumber').addEventListener('input', function(e) {
+        let value = e.target.value.replace(/[^\d+\-\s()]/g, '');
+        e.target.value = value;
+    });
+    
+    // Gestion du bouton de paiement
+    payButton.addEventListener('click', function() {
+        if (!selectedMethod) {
+            alert('⚠️ Veuillez sélectionner une méthode de paiement');
+            return;
+        }
+        
+        const phoneNumber = document.getElementById('phoneNumber').value;
+        const mobileMoneyMethods = ['ORANGE_MONEY', 'MTN_MONEY', 'MOOV_MONEY', 'WAVE'];
+        
+        if (mobileMoneyMethods.includes(selectedMethod) && !phoneNumber) {
+            alert('📱 Veuillez saisir votre numéro de téléphone');
+            document.getElementById('phoneNumber').focus();
+            return;
+        }
+        
+        // Validation format numéro
+        if (mobileMoneyMethods.includes(selectedMethod) && phoneNumber) {
+            const phoneRegex = /^(\+225)?[0-9\s\-()]{8,}$/;
+            if (!phoneRegex.test(phoneNumber)) {
+                alert('⚠️ Format de numéro invalide. Utilisez le format: +225 XX XX XX XX XX');
+                document.getElementById('phoneNumber').focus();
+                return;
+            }
+        }
+        
+        // Désactiver le bouton et afficher le spinner
+        payButton.disabled = true;
+        payButton.innerHTML = '⏳ Traitement en cours...';
+        loadingSpinner.style.display = 'block';
+        
+        // Configuration de la transaction
+        const transactionData = {
+            transaction_id: '{{ paiement.reference_transaction }}',
+            amount: {{ paiement.montant_total|floatformat:0 }},
+            currency: 'XOF',
+            description: 'Paiement acte - {{ paiement.demande_acte.type_acte|default:"Acte" }}',
+            customer_name: '{{ paiement.demande_acte.demandeur.get_full_name|default:"Client" }}',
+            customer_email: '{{ paiement.demande_acte.demandeur.email|default:"client@example.com" }}',
+            customer_phone_number: phoneNumber || '{{ paiement.numero_telephone|default:"" }}',
+            channels: selectedMethod,
+            ...CINETPAY_CONFIG
+        };
+        
+        // Vérifier la configuration
+        if (!transactionData.apikey || transactionData.apikey === 'votre_api_key') {
+            showStatus('error', '❌ Configuration CinetPay manquante. Contactez l\'administrateur.');
+            resetButton();
+            return;
+        }
+        
+        // Initier le paiement CinetPay
+        try {
+            CinetPay.setConfig(transactionData);
+            
+            CinetPay.getCheckout({
+                transaction_id: transactionData.transaction_id,
+                amount: transactionData.amount,
+                currency: transactionData.currency,
+                channels: transactionData.channels,
+                description: transactionData.description,
+                customer_name: transactionData.customer_name,
+                customer_email: transactionData.customer_email,
+                customer_phone_number: transactionData.customer_phone_number,
+                notify_url: transactionData.notify_url,
+                return_url: transactionData.return_url,
+                apikey: transactionData.apikey,
+                site_id: transactionData.site_id
+            });
+            
+            CinetPay.waitResponse(function(data) {
+                loadingSpinner.style.display = 'none';
+                
+                if (data.status == "REFUSED") {
+                    showStatus('error', '❌ Paiement refusé: ' + data.message);
+                    resetButton();
+                } else if (data.status == "ACCEPTED") {
+                    showStatus('success', '✅ Paiement accepté! Vérification en cours...');
+                    
+                    // Vérifier le statut côté serveur
+                    setTimeout(() => {
+                        verifyPaymentStatus();
+                    }, 2000);
+                    
+                } else {
+                    showStatus('pending', '⏳ Paiement en cours de traitement...');
+                    
+                    // Vérifier périodiquement le statut
+                    const checkInterval = setInterval(() => {
+                        verifyPaymentStatus(() => {
+                            clearInterval(checkInterval);
+                        });
+                    }, 5000);
+                    
+                    // Arrêter la vérification après 5 minutes
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        showStatus('error', '⏰ Délai d\'attente dépassé. Veuillez vérifier manuellement.');
+                        resetButton();
+                    }, 300000);
+                }
+            });
+            
+            CinetPay.onError(function(data) {
+                loadingSpinner.style.display = 'none';
+                showStatus('error', '❌ Erreur lors du paiement: ' + (data.message || 'Erreur inconnue'));
+                resetButton();
+            });
+            
+        } catch (error) {
+            loadingSpinner.style.display = 'none';
+            showStatus('error', '❌ Erreur technique: ' + error.message);
+            resetButton();
+        }
+    });
+    
+    function showStatus(type, message) {
+        statusDisplay.className = 'status-display status-' + type;
+        statusMessage.innerHTML = message;
+        statusDisplay.style.display = 'block';
+    }
+    
+    function resetButton() {
+        payButton.disabled = false;
+        const methodName = document.querySelector('.method-card.selected .method-name')?.textContent || 'le paiement';
+        payButton.innerHTML = `🔒 Payer avec ${methodName}`;
+    }
+    
+    function verifyPaymentStatus(callback) {
+        fetch('{% url "admin:verify_payment" paiement.pk %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                'verify_only': true
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                // Succès - rediriger ou recharger
+                showStatus('success', '✅ Paiement confirmé avec succès!');
+                setTimeout(() => {
+                    window.location.href = '{% url "admin:core_paiement_change" paiement.pk %}';
+                }, 2000);
+            } else {
+                throw new Error('Vérification échouée');
+            }
+        })
+        .catch(error => {
+            console.error('Erreur vérification:', error);
+            if (callback) callback();
+        });
+    }
+    
+    // Préselectionner la méthode si déjà définie
+    const currentMethod = '{{ paiement.methode_paiement }}';
+    if (currentMethod) {
+        const methodMap = {
+            'CARTE_BANCAIRE': 'CARD',
+            'CINETPAY': 'CARD',
+            'ORANGE_MONEY': 'ORANGE_MONEY',
+            'MTN_MONEY': 'MTN_MONEY',
+            'MOOV_MONEY': 'MOOV_MONEY',
+            'MOBILE_MONEY': 'MOOV_MONEY',
+            'WAVE': 'WAVE'
+        };
+        
+        const mappedMethod = methodMap[currentMethod];
+        if (mappedMethod) {
+            const targetCard = document.querySelector(`[data-method="${mappedMethod}"]`);
+            if (targetCard) {
+                targetCard.click();
+            }
+        }
+    }
+    
+    // Animation d'entrée pour les cartes
+    methodCards.forEach((card, index) => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        setTimeout(() => {
+            card.style.transition = 'all 0.3s ease';
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        }, index * 100);
+    });
+});
+</script>
+{% endblock %}
